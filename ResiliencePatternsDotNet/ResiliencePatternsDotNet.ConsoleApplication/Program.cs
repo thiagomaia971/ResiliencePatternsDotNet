@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using ResiliencePatternsDotNet.ConsoleApplication.Common;
 using ResiliencePatternsDotNet.ConsoleApplication.Services;
@@ -8,19 +7,26 @@ using ResiliencePatternsDotNet.ConsoleApplication.Services.Resiliences;
 
 namespace ResiliencePatternsDotNet.ConsoleApplication
 {
-    class Program
+    internal class Program
     {
+        private static IResiliencePatterns ResiliencePatterns { get; set; }
+        private static IRequestHandle RequestHandle { get; set; }
+
         static void Main(string[] args)
         {
             Console.WriteLine($"EnvironmentValue: {GlobalVariables.EnvironmentValue}");
             Console.WriteLine($"Teste: {GlobalVariables.ConfigurationSection.ToJson()}");
+            Console.WriteLine();
             
+            ResiliencePatterns = new ResiliencePatterns();
+            RequestHandle = new RequestHandle(ResiliencePatterns);
+
             ProcessRequests();
             
             Console.ReadKey();
         }
 
-        private static void ProcessRequests()
+        private static  void ProcessRequests()
         {
             var requestCount = GlobalVariables.ConfigurationSection.RequestConfiguration.Count;
             var count = 1;
@@ -35,41 +41,16 @@ namespace ResiliencePatternsDotNet.ConsoleApplication
                 count++;
                 Console.WriteLine($"Requests Remaining [{requestCount}]");
                 Console.WriteLine();
-                Console.WriteLine();
             }
         }
 
         private static void ProcessRequest()
         {
-            IRequestHandle requestHandle;
             if (ErrorProbabilityService.IsErrorRequest(GlobalVariables.ConfigurationSection.RequestConfiguration
                 .ProbabilityError))
-                requestHandle = new RequestErrorHandle();
+                RequestHandle.HandleErrorRequest(GlobalVariables.ConfigurationSection.UrlConfiguration.Error.Method, GlobalVariables.ConfigurationSection.UrlConfiguration.Error.Url);
             else
-                requestHandle = new RequestSuccessHandle();
-
-            IList<IResiliencePattern> resiliencePatterns = new List<IResiliencePattern>();
-            switch (GlobalVariables.ConfigurationSection.RunPolicy)
-            {
-                case RunPolicyEnum.RETRY:
-                    resiliencePatterns.Add(new RetryResilience());
-                    break;
-                case RunPolicyEnum.CIRCUIT_BREAKER:
-                    resiliencePatterns.Add(new CircuitBreakerResilience());
-                    break;
-                case RunPolicyEnum.ALL:
-                    resiliencePatterns.Add(new RetryResilience());
-                    resiliencePatterns.Add(new CircuitBreakerResilience());
-                    break;
-                case RunPolicyEnum.NONE:
-                    resiliencePatterns.Add(new NoneResilience());
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            foreach (var resiliencePattern in resiliencePatterns)
-                resiliencePattern.Execute(requestHandle);
+                RequestHandle.HandleSuccessRequest(GlobalVariables.ConfigurationSection.UrlConfiguration.Success.Method, GlobalVariables.ConfigurationSection.UrlConfiguration.Success.Url);
         }
     }
 }

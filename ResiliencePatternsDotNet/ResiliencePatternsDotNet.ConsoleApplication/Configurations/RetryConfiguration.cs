@@ -8,6 +8,11 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
     [XmlRoot("retry-configuration")]
     public class RetryConfiguration : IConfigurationSectionHandler
     {
+        [XmlAttribute("Count")]
+        public int Count { get; set; }
+
+        [XmlAttribute("sleep-duration")]
+        public int SleepDuration { get; set; }
 
         public object Create(object parent, object configContext, XmlNode section)
         {

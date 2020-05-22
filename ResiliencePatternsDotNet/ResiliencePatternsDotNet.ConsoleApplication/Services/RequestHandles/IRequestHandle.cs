@@ -4,6 +4,7 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Services.RequestHandles
 {
     public interface IRequestHandle
     {
-        HttpResponseMessage Handle();
+        HttpResponseMessage HandleSuccessRequest(string actionMethod, string actionUrl);
+        HttpResponseMessage HandleErrorRequest(string actionMethod, string actionUrl);
     }
 }
