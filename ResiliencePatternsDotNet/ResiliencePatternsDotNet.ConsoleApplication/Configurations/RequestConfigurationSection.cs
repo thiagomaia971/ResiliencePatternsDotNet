@@ -16,6 +16,9 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
         
         [XmlAttribute("probability-error")]
         public int ProbabilityError { get; set; }
+        
+        [XmlAttribute("timeout")]
+        public int Timeout { get; set; }
 
         public object Create(object parent, object configContext, XmlNode section)
         {

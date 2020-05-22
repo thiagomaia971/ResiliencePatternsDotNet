@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using ResiliencePatternsDotNet.ConsoleApplication.Common;
 using ResiliencePatternsDotNet.ConsoleApplication.Services;
 using ResiliencePatternsDotNet.ConsoleApplication.Services.RequestHandles;
+using ResiliencePatternsDotNet.ConsoleApplication.Services.Resiliences;
 
 namespace ResiliencePatternsDotNet.ConsoleApplication
 {
@@ -45,9 +47,29 @@ namespace ResiliencePatternsDotNet.ConsoleApplication
                 requestHandle = new RequestErrorHandle();
             else
                 requestHandle = new RequestSuccessHandle();
-            
-            var result = requestHandle.Handle();
-            Console.WriteLine($"Result: {result.StatusCode}");
+
+            IList<IResiliencePattern> resiliencePatterns = new List<IResiliencePattern>();
+            switch (GlobalVariables.ConfigurationSection.RunPolicy)
+            {
+                case RunPolicyEnum.RETRY:
+                    resiliencePatterns.Add(new RetryResilience());
+                    break;
+                case RunPolicyEnum.CIRCUIT_BREAKER:
+                    resiliencePatterns.Add(new CircuitBreakerResilience());
+                    break;
+                case RunPolicyEnum.ALL:
+                    resiliencePatterns.Add(new RetryResilience());
+                    resiliencePatterns.Add(new CircuitBreakerResilience());
+                    break;
+                case RunPolicyEnum.NONE:
+                    resiliencePatterns.Add(new NoneResilience());
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            foreach (var resiliencePattern in resiliencePatterns)
+                resiliencePattern.Execute(requestHandle);
         }
     }
 }

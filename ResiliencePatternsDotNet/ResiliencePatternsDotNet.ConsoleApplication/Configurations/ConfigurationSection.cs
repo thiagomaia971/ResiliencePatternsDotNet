@@ -2,6 +2,8 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using ResiliencePatternsDotNet.ConsoleApplication.Common;
+using ResiliencePatternsDotNet.ConsoleApplication.Services.Resiliences;
 
 namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
 {
@@ -16,6 +18,15 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
         
         [XmlAttribute("url-configuration")]
         public UrlConfigurationSection UrlConfiguration { get; set; }
+        
+        [XmlAttribute("run-policy")]
+        public RunPolicyEnum RunPolicy { get; set; }
+        
+        [XmlAttribute("retry-configuration")]
+        public RetryConfiguration RetryConfiguration { get; set; }
+        
+        [XmlAttribute("circuit-breaker-configuration")]
+        public CircuitBreakerConfiguration CircuitBreakerConfiguration { get; set; }
 
         public object Create(object parent, object configContext, XmlNode section)
         {
