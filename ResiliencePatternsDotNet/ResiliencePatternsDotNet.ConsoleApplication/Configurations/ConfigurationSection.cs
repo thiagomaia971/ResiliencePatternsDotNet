@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using ResiliencePatternsDotNet.ConsoleApplication.Common;
+using ResiliencePatternsDotNet.ConsoleApplication.Configurations.CircuitBreakerConfigurations;
 using ResiliencePatternsDotNet.ConsoleApplication.Services.Resiliences;
 
 namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations

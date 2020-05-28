@@ -46,7 +46,7 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Services.RequestHandles
                 {
                     httpClient.BaseAddress = new Uri(GlobalVariables.ConfigurationSection.UrlConfiguration.BaseUrl);
                     httpClient.Timeout =
-                        TimeSpan.FromSeconds(GlobalVariables.ConfigurationSection.RequestConfiguration.Timeout);
+                        TimeSpan.FromMilliseconds(GlobalVariables.ConfigurationSection.RequestConfiguration.Timeout);
                     var methodEnum = new HttpMethod(actionMethod);
 
                     var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, actionUrl)).GetAwaiter().GetResult();
@@ -58,7 +58,7 @@ namespace ResiliencePatternsDotNet.ConsoleApplication.Services.RequestHandles
                     return result;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Console.WriteLine($"Result: Timeout");
                 throw new HttpRequestException();

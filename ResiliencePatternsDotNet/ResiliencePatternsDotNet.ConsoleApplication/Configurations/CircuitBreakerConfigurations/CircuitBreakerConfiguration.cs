@@ -3,16 +3,22 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
+namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations.CircuitBreakerConfigurations
 {
     [XmlRoot("circuit-breaker-configuration")]
     public class CircuitBreakerConfiguration : IConfigurationSectionHandler
     {
-        [XmlAttribute("exceptions-allowed-before-breaking")]
-        public int ExceptionsAllowedBeforeBreaking { get; set; }
-
+        [XmlAttribute("is-simple-configuration")]
+        public bool IsSimpleConfiguration { get; set; }
+        
         [XmlAttribute("duration-of-breaking")]
         public int DurationOfBreaking { get; set; }
+        
+        [XmlAttribute("simple-configuration")]
+        public CircuitBreakerSimpleConfiguration SimpleConfiguration { get; set; }
+
+        [XmlAttribute("advanced-configuration")]
+        public CircuitBreakerAdvancedConfiguration AdvancedConfiguration { get; set; }
 
         public object Create(object parent, object configContext, XmlNode section)
         {

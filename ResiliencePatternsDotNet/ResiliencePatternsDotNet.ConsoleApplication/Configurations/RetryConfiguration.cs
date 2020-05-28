@@ -2,14 +2,18 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using ResiliencePatternsDotNet.ConsoleApplication.Common;
 
 namespace ResiliencePatternsDotNet.ConsoleApplication.Configurations
 {
     [XmlRoot("retry-configuration")]
     public class RetryConfiguration : IConfigurationSectionHandler
     {
-        [XmlAttribute("Count")]
+        [XmlAttribute("count")]
         public int Count { get; set; }
+
+        [XmlAttribute("sleep-duration-type")]
+        public SleepDurationType SleepDurationType { get; set; }
 
         [XmlAttribute("sleep-duration")]
         public int SleepDuration { get; set; }
