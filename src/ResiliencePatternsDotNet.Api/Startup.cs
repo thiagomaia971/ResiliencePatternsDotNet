@@ -35,6 +35,7 @@ namespace ResiliencePatternsDotNet.Api
 
             services.AddTransient<IExecuteService, ExecuteService>();
             services.AddScoped<MetricService>();
+            services.AddScoped<MetricsRegistry>();
             
             services.AddControllers()
                 .AddNewtonsoftJson(opt =>

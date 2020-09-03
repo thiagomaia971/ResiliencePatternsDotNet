@@ -59,6 +59,7 @@ namespace ResiliencePatternsDotNet.Domain.Services
                 Console.WriteLine();
             }
 
+            _metrics.ResetAll();
             return _metrics.MetricStatus;
         }
 
