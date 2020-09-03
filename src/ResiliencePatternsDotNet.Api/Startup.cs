@@ -2,6 +2,7 @@ using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using ResiliencePatternsDotNet.Domain.Commands;
+using ResiliencePatternsDotNet.Domain.Common;
 using ResiliencePatternsDotNet.Domain.Services;
 using ResiliencePatternsDotNet.Infra;
 
@@ -25,10 +27,14 @@ namespace ResiliencePatternsDotNet.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
+            services.AddMetrics();
+            
             services.AddDbContext<ResiliencePatternsDotNetDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IExecuteService, ExecuteService>();
+            services.AddScoped<MetricService>();
             
             services.AddControllers()
                 .AddNewtonsoftJson(opt =>

@@ -11,33 +11,36 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
     {
         private readonly IResiliencePatterns _resiliencePatterns;
         private readonly ConfigurationSection _configurationSection;
+        private readonly MetricService _metrics;
 
-        public RequestHandle(IResiliencePatterns resiliencePatterns, ConfigurationSection configurationSection)
+        public RequestHandle(IResiliencePatterns resiliencePatterns, ConfigurationSection configurationSection,
+            MetricService metrics)
         {
             _resiliencePatterns = resiliencePatterns;
             _configurationSection = configurationSection;
+            _metrics = metrics;
         }
 
-        public HttpResponseMessage HandleRequest(MetricStatus metric, int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error)
+        public HttpResponseMessage HandleRequest(int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error)
             => _configurationSection.RunPolicy switch
             {
                 RunPolicyEnum.RETRY => _resiliencePatterns.RetryPolicy
-                    .ExecuteAndCapture(() => MakeRequest(metric, probabilityErrorPercent, success, error))
+                    .ExecuteAndCapture(() => MakeRequest(probabilityErrorPercent, success, error))
                     .Result,
                 RunPolicyEnum.CIRCUIT_BREAKER => _resiliencePatterns.CircuitBreakerPolicy
-                    .ExecuteAndCapture(() => MakeRequest(metric, probabilityErrorPercent, success, error))
+                    .ExecuteAndCapture(() => MakeRequest(probabilityErrorPercent, success, error))
                     .Result,
                 RunPolicyEnum.ALL => _resiliencePatterns
                     .RetryPolicy
                     .ExecuteAndCapture(() =>
                         _resiliencePatterns.CircuitBreakerPolicy.Execute(() =>
-                            MakeRequest(metric, probabilityErrorPercent, success, error)))
+                            MakeRequest(probabilityErrorPercent, success, error)))
                     .Result,
-                RunPolicyEnum.NONE => MakeRequest(metric, probabilityErrorPercent, success, error),
+                RunPolicyEnum.NONE => MakeRequest(probabilityErrorPercent, success, error),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-        private HttpResponseMessage MakeRequest(MetricStatus metric, int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error)
+        private HttpResponseMessage MakeRequest(int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error)
         {
             try
             {
@@ -46,14 +49,14 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
                 
                 if (ErrorProbabilityService.IsDalayRequest(probabilityErrorPercent))
                 {
-                    metric.IncrementDelayRequest();
+                    _metrics.IncrementErrorRequest();
                     actionMethod = error.Method;
                     actionUrl = error.Url;
                     Console.WriteLine($"Request With Delay!");
                 }
                 else
                 {
-                    metric.IncrementSuccessRequest();
+                    _metrics.IncrementSuccessRequest();
                     actionMethod = success.Method;
                     actionUrl = success.Url;
                     Console.WriteLine($"Request Normal!");
