@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ResiliencePatternsDotNet.AutomaticRunner.Configurations;
+using ResiliencePatternsDotNet.AutomaticRunner.Services;
 
 namespace ResiliencePatternsDotNet.AutomaticRunner
 {
@@ -24,6 +25,7 @@ namespace ResiliencePatternsDotNet.AutomaticRunner
 
                     AutomaticRunnerConfiguration options = configuration.GetSection("AutomaticRunnerConfiguration").Get<AutomaticRunnerConfiguration>();
                     services.AddSingleton(options);
+                    services.AddSingleton<ScenarioService>();
                     services.AddHostedService<Worker>();
                 });
     }
