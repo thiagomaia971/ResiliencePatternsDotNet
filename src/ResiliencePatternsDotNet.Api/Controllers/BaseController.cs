@@ -20,7 +20,7 @@ namespace ResiliencePatternsDotNet.Api.Controllers
         {
             if (!result.IsSuccess)
                 return BadRequestMessage(result?.Exception);
-            return CreatedMessage(result);
+            return CreatedMessage(result.Result);
         }
 
         protected IActionResult BadRequestMessage<T>(T result)

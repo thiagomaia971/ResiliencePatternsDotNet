@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.Threading;
 using App.Metrics;
 using App.Metrics.Counter;
@@ -26,7 +27,7 @@ namespace ResiliencePatternsDotNet.Domain.Services
             Console.WriteLine($"Teste:     {configurationSection.ToJson()}");
             Console.WriteLine();
             
-            ResiliencePatterns = new ResiliencePatterns(configurationSection);
+            ResiliencePatterns = new ResiliencePatterns(configurationSection, _metrics);
             RequestHandle = new RequestHandle(ResiliencePatterns, configurationSection, _metrics);
             // InitializePrometheusServer();
 
@@ -45,25 +46,28 @@ namespace ResiliencePatternsDotNet.Domain.Services
 
         private MetricStatus ProcessRequests(ResiliencePatternsDotNet.Domain.Configurations.ConfigurationSection configurationSection)
         {
-            var requestCount = configurationSection.RequestConfiguration.Count;
+            _metrics.StartWatchTime();
             
-            while (requestCount > 0)
+            while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests && 
+                   _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests)
             {
-                _metrics.IncrementIterationCount();
+                Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
                 
                 ProcessRequest(configurationSection);
                 
                 Thread.Sleep(configurationSection.RequestConfiguration.Delay);
-                requestCount--;
-                Console.WriteLine($"Requests Remaining [{requestCount}]");
+                
+                Console.WriteLine(" -------- ");
                 Console.WriteLine();
             }
 
             _metrics.ResetAll();
+            
+            _metrics.StopWatchTime();
             return _metrics.MetricStatus;
         }
 
-        private void ProcessRequest(ResiliencePatternsDotNet.Domain.Configurations.ConfigurationSection configurationSection) 
+        private HttpResponseMessage ProcessRequest(ResiliencePatternsDotNet.Domain.Configurations.ConfigurationSection configurationSection) 
             => RequestHandle.HandleRequest(
                 configurationSection.RequestConfiguration.ProbabilityError, 
                 configurationSection.UrlConfiguration.Success, 

@@ -11,12 +11,14 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
     public class ResiliencePatterns : IResiliencePatterns
     {
         private readonly ConfigurationSection _configurationSection;
+        private readonly MetricService _metricService;
         public RetryPolicy RetryPolicy { get; private set; }
         public CircuitBreakerPolicy CircuitBreakerPolicy { get; private set; }
 
-        public ResiliencePatterns(ConfigurationSection configurationSection)
+        public ResiliencePatterns(ConfigurationSection configurationSection, MetricService metricService)
         {
             _configurationSection = configurationSection;
+            _metricService = metricService;
             CreateRetryPolicy();
             CreateCircuitBreakerPolicy();
         }
@@ -43,7 +45,12 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                     retryCount: _configurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
                         TimeSpan.FromMilliseconds(_configurationSection.RetryConfiguration.SleepDuration),
-                    onRetry: (exception, i) => Console.WriteLine($"\tTry number [{i}]"));
+                    onRetry: (exception, timeout) =>
+                    {
+                        _metricService.RetryMetric.IncrementRetryCount();
+                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        Console.WriteLine($"\tNew timeout of [{timeout}]");
+                    });
 
         private void CreateRetryExponencialBackoffSleepDurationPolicy()
             => RetryPolicy = Policy
@@ -52,7 +59,12 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                     retryCount: _configurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
                         TimeSpan.FromMilliseconds(Math.Pow(2, i) * _configurationSection.RetryConfiguration.SleepDuration),
-                    onRetry: (exception, i) => Console.WriteLine($"\tTry number [{i}]"));
+                    onRetry: (exception, timeout) =>
+                    {
+                        _metricService.RetryMetric.IncrementRetryCount();
+                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        Console.WriteLine($"\tNew timeout of [{timeout}]");
+                    });
 
         private void CreateCircuitBreakerPolicy()
         {
@@ -68,7 +80,12 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                 .CircuitBreaker(
                     exceptionsAllowedBeforeBreaking: _configurationSection.CircuitBreakerConfiguration.SimpleConfiguration.ExceptionsAllowedBeforeBreaking,
                     durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
-                    onBreak: (exception, span) => Console.WriteLine($"\tWait for [{span}]"),
+                    onBreak: (exception, timeOfBreak) =>
+                    {
+                        _metricService.CircuitBreakerMetric.IncrementBreakCount();
+                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak);
+                        Console.WriteLine($"\tBreak for [{timeOfBreak}]");
+                    },
                     onReset: () => Console.WriteLine($"\tReseted"));
 
         private void CreateCircuitBreakerAdvancedPolicy() 
@@ -79,7 +96,16 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                     samplingDuration: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.AdvancedConfiguration.SamplingDuration),
                     minimumThroughput: _configurationSection.CircuitBreakerConfiguration.AdvancedConfiguration.MinimumThroughput,
                     durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
-                    onBreak: (exception, span) => Console.WriteLine($"\tWait for [{span}]"),
-                    onReset: () => Console.WriteLine($"\tReseted"));
+                    onBreak: (exception, timeOfBreak) =>
+                    {
+                        _metricService.CircuitBreakerMetric.IncrementBreakCount();
+                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak);
+                        Console.WriteLine($"\tBreak for [{timeOfBreak}]");
+                    },
+                    onReset: () =>
+                    {
+                        _metricService.CircuitBreakerMetric.IncrementResetStat();
+                        Console.WriteLine($"\tReseted");
+                    });
     }
 }

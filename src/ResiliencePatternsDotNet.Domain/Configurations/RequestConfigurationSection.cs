@@ -8,8 +8,11 @@ namespace ResiliencePatternsDotNet.Domain.Configurations
     [XmlRoot("request-configuration")]
     public class RequestConfigurationSection : IConfigurationSectionHandler
     {
-        [XmlAttribute("count")]
-        public int Count { get; set; }
+        [XmlAttribute("successRequests")]
+        public int SuccessRequests { get; set; }
+        
+        [XmlAttribute("maxRequests")]
+        public int MaxRequests { get; set; }
         
         [XmlAttribute("delay")]
         public int Delay { get; set; }

@@ -8,7 +8,7 @@ namespace ResiliencePatternsDotNet.Domain.Services
         {
             var r = new Random();
             var rInt = r.Next(0, 100);
-            return rInt <= percent;
+            return rInt < percent;
         }
     }
 }

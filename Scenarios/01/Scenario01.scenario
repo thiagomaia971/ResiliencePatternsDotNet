@@ -1,0 +1,40 @@
+{
+	"Parameters": {
+		"UrlConfiguration": {
+		  "BaseUrl": "http://httpbin.org",
+		  "Success": {
+			"Url": "/get",
+			"Method": "GET"
+		  },
+		  "Error": {
+			"Url": "/status/500",
+			"Method": "GET"
+		  }
+		},
+		"RequestConfiguration": {
+		  "SuccessRequests": 1,
+		  "MaxRequests": 1,
+		  "Delay": 0,
+		  "ProbabilityError": 100,
+		  "Timeout": 2000
+		},
+		"RunPolicy": "RETRY",
+		"RetryConfiguration": {
+		  "Count": 1,
+		  "SleepDuration": 500,
+		  "SleepDurationType": "EXPONENTIAL_BACKOFF"
+		},
+		"CircuitBreakerConfiguration": {
+		  "IsSimpleConfiguration": true,
+		  "DurationOfBreaking": 30000,
+		  "SimpleConfiguration": {
+			"ExceptionsAllowedBeforeBreaking": 2
+		  },
+		  "AdvancedConfiguration": {
+			"FailureThreshold": 0.5,
+			"SamplingDuration": 5000,
+			"MinimumThroughput": 20
+		  }
+		}
+  }
+}
