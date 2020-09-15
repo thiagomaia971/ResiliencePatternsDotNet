@@ -34,7 +34,7 @@ namespace ResiliencePatternsDotNet.Domain.Services
 
         public void ResetAll()
         {
-            // _metrics.Measure.Counter.Decrement(_metricsRegistry.IncrementErrorRequest, _metricStatus.ErrorRequest);
+            // _metrics.Measure.Counter.Decrement(_metricsRegistry.IncrementClientError, _metricStatus.ErrorRequest);
             // _metrics.Measure.Counter.Decrement(_metricsRegistry.IncrementIterationCount, _metricStatus.RequestCount);
             // _metrics.Measure.Counter.Decrement(_metricsRegistry.IncrementSuccessRequest, _metricStatus.SuccessRequest);
         }
@@ -49,6 +49,30 @@ namespace ResiliencePatternsDotNet.Domain.Services
         {
             _stopwatch?.Stop();
             _metricStatus.AddTotalTime(_stopwatch?.Elapsed);
+        }
+
+        public void IncrementClientSuccess()
+        {
+            _metricStatus.Client.IncrementeSuccess();
+            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientSuccess);
+        }
+
+        public void IncrementClientError()
+        {
+            _metricStatus.Client.IncrementeError();
+            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientError);
+        }
+
+        public void IncrementeResilienceModuleError()
+        {
+            _metricStatus.ResilienceModule.IncrementeError();
+            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleError);
+        }
+
+        public void IncrementeResilienceModuleSuccess()
+        {
+            _metricStatus.ResilienceModule.IncrementeSuccess();
+            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleSucess);
         }
     }
 

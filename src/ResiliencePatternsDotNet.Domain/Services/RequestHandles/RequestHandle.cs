@@ -66,14 +66,14 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
             
             if (ErrorProbabilityService.IsDalayRequest(probabilityErrorPercent))
             {
-                _metrics.ResilienceModule.IncrementeError();
+                _metrics.IncrementeResilienceModuleError();
                 actionMethod = error.Method;
                 actionUrl = error.Url;
                 Console.WriteLine($"Request With Delay!");
             }
             else
             {
-                _metrics.ResilienceModule.IncrementeSuccess();
+                _metrics.IncrementeResilienceModuleSuccess();
                 actionMethod = success.Method;
                 actionUrl = success.Url;
                 Console.WriteLine($"Request Normal!");
@@ -99,9 +99,9 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
         private HttpResponseMessage HandleClientResult(HttpResponseMessage result)
         {
             if (result?.IsSuccessStatusCode ?? false)
-                _metrics.Client.IncrementeSuccess();
+                _metrics.IncrementClientSuccess();
             else
-                _metrics.Client.IncrementeError();
+                _metrics.IncrementClientError();
             
             return result;
         }
