@@ -14,6 +14,9 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Configurations
         [XmlAttribute("scenarios-path")]
         public string ScenariosPath { get; set; }
         
+        [XmlAttribute("result-type")]
+        public ResultType ResultType { get; set; }
+        
         public object Create(object parent, object configContext, XmlNode section)
         {
             var ser = new XmlSerializer(typeof(AutomaticRunnerConfiguration));

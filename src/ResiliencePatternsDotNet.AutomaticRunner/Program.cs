@@ -26,6 +26,7 @@ namespace ResiliencePatternsDotNet.AutomaticRunner
                     AutomaticRunnerConfiguration options = configuration.GetSection("AutomaticRunnerConfiguration").Get<AutomaticRunnerConfiguration>();
                     services.AddSingleton(options);
                     services.AddSingleton<ScenarioService>();
+                    services.AddSingleton<ResultWriterService>();
                     services.AddHostedService<Worker>();
                 });
     }

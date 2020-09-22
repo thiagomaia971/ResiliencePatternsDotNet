@@ -14,9 +14,13 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
     public class ScenarioService
     {
         private readonly AutomaticRunnerConfiguration _automaticRunnerConfiguration;
+        private readonly ResultWriterService _resultWriterService;
 
-        public ScenarioService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
-            => _automaticRunnerConfiguration = automaticRunnerConfiguration;
+        public ScenarioService(AutomaticRunnerConfiguration automaticRunnerConfiguration, ResultWriterService resultWriterService)
+        {
+            _automaticRunnerConfiguration = automaticRunnerConfiguration;
+            _resultWriterService = resultWriterService;
+        }
 
         public void ProcessScenarios()
         {
@@ -53,7 +57,7 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
                 {
                     Console.WriteLine(x);
                     var result = MakeRequest(scenario);
-                    WriteResult(scenario, ((int)x) + 1, result);
+                    _resultWriterService.Write(scenario, ((int)x) + 1, result);
                 }).Start(i);
             }
         }
@@ -71,17 +75,6 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
                 };
                 
                 return httpClient.SendAsync(httpRequestMessage).GetAwaiter().GetResult();
-            }
-        }
-
-        private void WriteResult(Scenario scenario, int count, HttpResponseMessage result)
-        {
-            var contentJsonUnPrettyfied = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            var jsonElement = JsonConvert.DeserializeObject(contentJsonUnPrettyfied);
-            
-            using (var streamWriter = new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}[{count}].result"))
-            {
-                streamWriter.Write(JsonConvert.SerializeObject(jsonElement, Formatting.Indented));
             }
         }
     }
