@@ -1,5 +1,5 @@
 # Input Client Configuration
-```
+```json
 {
     "UrlConfiguration": {
         "BaseUrl": string,
