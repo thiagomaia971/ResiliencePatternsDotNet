@@ -4,12 +4,12 @@
     "UrlConfiguration": {
         "BaseUrl": string,
         "Success": {
-        "Url": string,
-        "Method": "GET/POST/PUT"
+            "Url": string,
+            "Method": "GET/POST/PUT"
         },
         "Error": {
-        "Url": string,
-        "Method": "GET/POST/PUT"
+            "Url": string,
+            "Method": "GET/POST/PUT"
         }
     },
     "RequestConfiguration": {
@@ -33,7 +33,7 @@
         "SamplingDuration": int,
         "MinimumThroughput": int
     }
-    }
+}
 ```
 
 # Result Client Configuration
@@ -76,9 +76,9 @@
 {
 	"Count": int,
 	"UrlFetch": {
-      "BaseUrl": string,
-      "ActionUrl": string,
-      "Method": "GET/POST/PUT"
+        "BaseUrl": string,
+        "ActionUrl": string,
+        "Method": "GET/POST/PUT"
     },
     "ResultType": "TXT/CSV",
 	"Parameters": {
