@@ -2,8 +2,6 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using ResiliencePatternsDotNet.Domain.Common;
-using ResiliencePatternsDotNet.Domain.Configurations.CircuitBreakerConfigurations;
 using ResiliencePatternsDotNet.Domain.Entities.Enums;
 
 namespace ResiliencePatternsDotNet.Domain.Configurations

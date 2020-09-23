@@ -3,11 +3,20 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace ResiliencePatternsDotNet.Domain.Configurations.CircuitBreakerConfigurations
+namespace ResiliencePatternsDotNet.Domain.Configurations
 {
-    [XmlRoot("circuit-breaker-advanced-configuration")]
-    public class CircuitBreakerAdvancedConfiguration : IConfigurationSectionHandler
+    [XmlRoot("circuit-breaker-configuration")]
+    public class CircuitBreakerConfiguration : IConfigurationSectionHandler
     {
+        [XmlAttribute("is-simple-configuration")]
+        public bool IsSimpleConfiguration { get; set; }
+        
+        [XmlAttribute("duration-of-breaking")]
+        public int DurationOfBreaking { get; set; }
+        
+        [XmlAttribute("exceptions-allowed-before-breaking")]
+        public int ExceptionsAllowedBeforeBreaking { get; set; }
+        
         /// <summary>
         /// The proportion of failures at which to break. A double between 0 and 1. For example, 0.5 represents break on 50% or more of actions through the circuit resulting in a handled failure.
         /// </summary>
@@ -25,12 +34,12 @@ namespace ResiliencePatternsDotNet.Domain.Configurations.CircuitBreakerConfigura
         /// </summary>
         [XmlAttribute("minimum-throughput")]
         public int MinimumThroughput { get; set; }
-        
+
         public object Create(object parent, object configContext, XmlNode section)
         {
-            var ser = new XmlSerializer(typeof(CircuitBreakerAdvancedConfiguration));
+            var ser = new XmlSerializer(typeof(CircuitBreakerConfiguration));
             using (var sr = new StringReader(section.OuterXml))
-                return (CircuitBreakerAdvancedConfiguration) ser.Deserialize(sr);
+                return (CircuitBreakerConfiguration) ser.Deserialize(sr);
         }
     }
 }

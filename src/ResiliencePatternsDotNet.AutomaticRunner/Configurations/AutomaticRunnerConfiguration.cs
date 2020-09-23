@@ -8,14 +8,9 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Configurations
     [XmlRoot("automatic-runner")]
     public class AutomaticRunnerConfiguration : IConfigurationSectionHandler
     {
-        [XmlAttribute("url-fetch")]
-        public UrlFetchConfigurationSection UrlFetch { get; set; }
         
         [XmlAttribute("scenarios-path")]
         public string ScenariosPath { get; set; }
-        
-        [XmlAttribute("result-type")]
-        public ResultType ResultType { get; set; }
         
         public object Create(object parent, object configContext, XmlNode section)
         {

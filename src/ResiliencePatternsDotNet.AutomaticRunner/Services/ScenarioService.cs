@@ -51,11 +51,16 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
 
         private void ProcessScenario(Scenario scenario)
         {
+            Console.WriteLine($"Scenario: {scenario.FileName}");
+            Console.WriteLine();
+            
+            if (File.Exists(scenario.ResultPath))
+                File.Delete(scenario.ResultPath);
+            
             for (int i = 0; i < scenario.Count; i++)
             {
                 new Thread((x) =>
                 {
-                    Console.WriteLine(x);
                     var result = MakeRequest(scenario);
                     _resultWriterService.Write(scenario, ((int)x) + 1, result);
                 }).Start(i);
@@ -66,10 +71,11 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
         {
             using (var httpClient = new HttpClient())
             {
-                httpClient.BaseAddress = new Uri(_automaticRunnerConfiguration.UrlFetch.BaseUrl);
-                var methodEnum = new HttpMethod(_automaticRunnerConfiguration.UrlFetch.Method);
+                httpClient.BaseAddress = new Uri(scenario.UrlFetch.BaseUrl);
+                var methodEnum = new HttpMethod(scenario.UrlFetch.Method);
+                httpClient.Timeout = TimeSpan.FromHours(10d);
 
-                var httpRequestMessage = new HttpRequestMessage(methodEnum, _automaticRunnerConfiguration.UrlFetch.ActionUrl)
+                var httpRequestMessage = new HttpRequestMessage(methodEnum, scenario.UrlFetch.ActionUrl)
                 {
                     Content = new StringContent(JsonConvert.SerializeObject(scenario.Parameters), Encoding.UTF8, "application/json")
                 };

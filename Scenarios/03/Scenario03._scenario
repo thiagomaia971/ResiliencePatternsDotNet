@@ -1,5 +1,5 @@
 {
-	"Count": 5,
+	"Count": 10,
 	"UrlFetch": {
       "BaseUrl": "http://localhost:5000",
       "ActionUrl": "/execute",
@@ -20,16 +20,16 @@
 		},
 		"RequestConfiguration": {
 		  "SuccessRequests": 1,
-		  "MaxRequests": 1,
+		  "MaxRequests": 10,
 		  "Delay": 0,
 		  "ProbabilityError": 100,
 		  "Timeout": 2000
 		},
 		"RunPolicy": "RETRY",
 		"RetryConfiguration": {
-		  "Count": 1,
+		  "Count": 5,
 		  "SleepDuration": 500,
-		  "SleepDurationType": "EXPONENTIAL_BACKOFF"
+		  "SleepDurationType": "FIXED"
 		},
 		"CircuitBreakerConfiguration": {
 		  "IsSimpleConfiguration": true,

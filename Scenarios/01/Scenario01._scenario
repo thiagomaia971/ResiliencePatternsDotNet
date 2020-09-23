@@ -1,5 +1,11 @@
 {
 	"Count": 10,
+	"UrlFetch": {
+      "BaseUrl": "http://localhost:5000",
+      "ActionUrl": "/execute",
+      "Method": "POST"
+    },
+    "ResultType": "CSV",
 	"Parameters": {
 		"UrlConfiguration": {
 		  "BaseUrl": "http://httpbin.org",
@@ -14,28 +20,24 @@
 		},
 		"RequestConfiguration": {
 		  "SuccessRequests": 1,
-		  "MaxRequests": 1,
+		  "MaxRequests": 10,
 		  "Delay": 0,
 		  "ProbabilityError": 100,
 		  "Timeout": 2000
 		},
-		"RunPolicy": "RETRY",
+		"RunPolicy": "CIRCUIT_BREAKER",
 		"RetryConfiguration": {
-		  "Count": 1,
+		  "Count": 5,
 		  "SleepDuration": 500,
 		  "SleepDurationType": "EXPONENTIAL_BACKOFF"
 		},
 		"CircuitBreakerConfiguration": {
 		  "IsSimpleConfiguration": true,
 		  "DurationOfBreaking": 30000,
-		  "SimpleConfiguration": {
-			"ExceptionsAllowedBeforeBreaking": 2
-		  },
-		  "AdvancedConfiguration": {
-			"FailureThreshold": 0.5,
-			"SamplingDuration": 5000,
-			"MinimumThroughput": 20
-		  }
+		  "ExceptionsAllowedBeforeBreaking": 2,
+		  "FailureThreshold": 0.5,
+		  "SamplingDuration": 5000,
+		  "MinimumThroughput": 20
 		}
   }
 }

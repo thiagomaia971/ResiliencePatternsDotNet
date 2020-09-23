@@ -20,7 +20,7 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
             => _automaticRunnerConfiguration = automaticRunnerConfiguration;
 
         public void Write(Scenario scenario, int count, HttpResponseMessage result) 
-            => resultTypeHandler[_automaticRunnerConfiguration.ResultType](scenario, count, result);
+            => resultTypeHandler[scenario.ResultType](scenario, count, result);
 
         private static void WriteTxt(Scenario scenario, int count, HttpResponseMessage result)
         {
@@ -38,24 +38,34 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
             if (scenario.Results.Count != scenario.Count) 
                 return;
             
-
-            using (var streamWriter =
-                new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}-result.csv"))
+            lock (scenario)
             {
-                WriteHeaderCsv(streamWriter);
-                foreach (var httpResponseMessage in scenario.Results)
+                if (File.Exists(scenario.ResultPath)) 
+                    return;
+                
+                using (var streamWriter =
+                    new StreamWriter(scenario.ResultPath))
                 {
-                    var contentJsonUnPrettyfied = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    var jsonElement = JsonConvert.DeserializeObject<dynamic>(contentJsonUnPrettyfied);
-                    
-                    streamWriter.WriteLine($"{jsonElement.TotalTime}; {jsonElement.Client.Success}; {jsonElement.Client.Error}; {jsonElement.ResilienceModule.Success}; {jsonElement.ResilienceModule.Error}");
+                    WriteHeaderCsv(streamWriter);
+                    foreach (var httpResponseMessage in scenario.Results)
+                    {
+                        var contentJsonUnPrettyfied = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        var jsonElement = JsonConvert.DeserializeObject<dynamic>(contentJsonUnPrettyfied);
+                        
+                        streamWriter.WriteLine($"{jsonElement.TotalTime}; {jsonElement.ClientToModule.Success}; {jsonElement.ClientToModule.Error}; {jsonElement.ResilienceModuleToExternalService.Success}; {jsonElement.ResilienceModuleToExternalService.Error}; {(jsonElement.RetryMetrics == null ? "" : jsonElement.RetryMetrics.RetryCount)}; {(jsonElement.RetryMetrics == null ? "" : jsonElement.RetryMetrics.TotalTimeout)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.BreakCount)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.ResetStatCount)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.TotalOfBreak)}");
+                    }
                 }
             }
         }
 
+        private static void WriteCsv()
+        {
+            
+        }
+
         private static void WriteHeaderCsv(StreamWriter streamWriter)
         {
-            streamWriter.WriteLine("Total Time; Client Success; Client Error; Resilience Module Success; Resilience Module Error;");
+            streamWriter.WriteLine("Total Time; ClientToModule Success; ClientToModule Error; ResilienceModuleToExternalService Success; ResilienceModuleToExternalService Error; Retry Count; Retry TotalTimeout; CircuitBreaker Count; CircuitBreaker ResetCount; CircuitBreaker TotalOfBreaker");
         }
     }
 }

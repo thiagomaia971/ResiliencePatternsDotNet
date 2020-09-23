@@ -2,7 +2,6 @@
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
-using ResiliencePatternsDotNet.Domain.Common;
 using ResiliencePatternsDotNet.Domain.Configurations;
 using ResiliencePatternsDotNet.Domain.Entities.Enums;
 
@@ -78,7 +77,7 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
             => CircuitBreakerPolicy = Policy
                 .Handle<Exception>()
                 .CircuitBreaker(
-                    exceptionsAllowedBeforeBreaking: _configurationSection.CircuitBreakerConfiguration.SimpleConfiguration.ExceptionsAllowedBeforeBreaking,
+                    exceptionsAllowedBeforeBreaking: _configurationSection.CircuitBreakerConfiguration.ExceptionsAllowedBeforeBreaking,
                     durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
                     onBreak: (exception, timeOfBreak) =>
                     {
@@ -92,9 +91,9 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
             => CircuitBreakerPolicy = Policy
                 .Handle<Exception>()
                 .AdvancedCircuitBreaker(
-                    failureThreshold: _configurationSection.CircuitBreakerConfiguration.AdvancedConfiguration.FailureThreshold,
-                    samplingDuration: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.AdvancedConfiguration.SamplingDuration),
-                    minimumThroughput: _configurationSection.CircuitBreakerConfiguration.AdvancedConfiguration.MinimumThroughput,
+                    failureThreshold: _configurationSection.CircuitBreakerConfiguration.FailureThreshold,
+                    samplingDuration: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.SamplingDuration),
+                    minimumThroughput: _configurationSection.CircuitBreakerConfiguration.MinimumThroughput,
                     durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
                     onBreak: (exception, timeOfBreak) =>
                     {

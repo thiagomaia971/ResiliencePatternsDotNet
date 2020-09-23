@@ -9,21 +9,22 @@ namespace ResiliencePatternsDotNet.Domain.Common
         public string TotalTime 
             => _totalTime?.ToExtensiveValue();
         private TimeSpan? _totalTime { get; set; }
-        public MetricCountStatus Client { get; private set; }
-        public MetricCountStatus ResilienceModule { get; private set; }
-        public MetricResilicienceModuleStatus CustomResilience { get; private set; }
+        public MetricCountStatus ClientToModule { get; private set; }
+        public MetricCountStatus ResilienceModuleToExternalService { get; private set; }
+        public MetricRetryStatus RetryMetrics { get; private set; }
+        public MetricCircuitBreakerStatus CircuitBreakerMetrics { get; private set; }
 
         protected MetricStatus()
         {
-            Client = new MetricCountStatus();
-            ResilienceModule = new MetricCountStatus();
+            ClientToModule = new MetricCountStatus();
+            ResilienceModuleToExternalService = new MetricCountStatus();
         }
         
         public static MetricStatus Create() 
             => new MetricStatus();
-
-        public void CreateRetryCustom() => CustomResilience = new MetricRetryStatus();
-        public void CreateCircuitBrekerCustom() => CustomResilience = new MetricCircuitBreakerStatus();
+        
+        public void CreateRetryCustom() => RetryMetrics = new MetricRetryStatus();
+        public void CreateCircuitBrekerCustom() => CircuitBreakerMetrics = new MetricCircuitBreakerStatus();
         public void AddTotalTime(TimeSpan? totalTime) => _totalTime = totalTime;
     }
 
