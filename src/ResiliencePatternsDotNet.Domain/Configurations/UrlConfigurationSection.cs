@@ -11,11 +11,11 @@ namespace ResiliencePatternsDotNet.Domain.Configurations
         [XmlAttribute("base-url")]
         public string BaseUrl { get; set; }
         
-        [XmlAttribute("succes")]
-        public UrlFetchConfigurationSection Success { get; set; }
+        [XmlAttribute("action")]
+        public string Action { get; set; }
         
-        [XmlAttribute("error")]
-        public UrlFetchConfigurationSection Error { get; set; }
+        [XmlAttribute("method")]
+        public string Method { get; set; }
         
         public object Create(object parent, object configContext, XmlNode section)
         {

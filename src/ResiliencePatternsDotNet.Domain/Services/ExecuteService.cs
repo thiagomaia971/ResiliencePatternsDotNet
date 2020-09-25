@@ -68,9 +68,6 @@ namespace ResiliencePatternsDotNet.Domain.Services
         }
 
         private HttpResponseMessage ProcessRequest(ResiliencePatternsDotNet.Domain.Configurations.ConfigurationSection configurationSection) 
-            => RequestHandle.HandleRequest(
-                configurationSection.RequestConfiguration.ProbabilityError, 
-                configurationSection.UrlConfiguration.Success, 
-                configurationSection.UrlConfiguration.Error);
+            => RequestHandle.HandleRequest(configurationSection.UrlConfiguration);
     }
 }

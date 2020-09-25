@@ -31,7 +31,7 @@ namespace ResiliencePatternsDotNet.AutomaticRunner.Services
 
         private IEnumerable<Scenario> LoadScenarios()
         {
-            var scenariosPath = System.IO.Directory.GetFiles(_automaticRunnerConfiguration.ScenariosPath, "*.scenario", SearchOption.AllDirectories);;
+            var scenariosPath = System.IO.Directory.GetFiles(_automaticRunnerConfiguration.ScenariosPath, "*.scenario.json", SearchOption.AllDirectories);;
             var scenarios = new List<Scenario>();
             foreach (var scenarioFile in scenariosPath)
             {

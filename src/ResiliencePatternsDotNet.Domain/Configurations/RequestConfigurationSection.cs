@@ -17,9 +17,6 @@ namespace ResiliencePatternsDotNet.Domain.Configurations
         [XmlAttribute("delay")]
         public int Delay { get; set; }
         
-        [XmlAttribute("probability-error")]
-        public int ProbabilityError { get; set; }
-        
         [XmlAttribute("timeout")]
         public int Timeout { get; set; }
 

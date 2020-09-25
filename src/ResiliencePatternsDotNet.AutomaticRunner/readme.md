@@ -66,7 +66,7 @@
 ```json
 {
     "AutomaticRunnerConfiguration": {
-    "ScenariosPath": "D:\\Wokspace\\Universidade\\ResiliencePatternsDotNet\\Scenarios"
+        "ScenariosPath": "D:\\Wokspace\\Universidade\\ResiliencePatternsDotNet\\Scenarios"
     }
 }
 ```

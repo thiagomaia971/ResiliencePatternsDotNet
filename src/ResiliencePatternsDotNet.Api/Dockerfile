@@ -6,16 +6,18 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["ResiliencePatternsDotNet.ApiApplication/ResiliencePatternsDotNet.ApiApplication.csproj", "ResiliencePatternsDotNet.ApiApplication/"]
-RUN dotnet restore "ResiliencePatternsDotNet.ApiApplication/ResiliencePatternsDotNet.ApiApplication.csproj"
+COPY ["src/ResiliencePatternsDotNet.Api/ResiliencePatternsDotNet.Api.csproj", "src/ResiliencePatternsDotNet.Api/"]
+COPY ["src/ResiliencePatternsDotNet.Infra/ResiliencePatternsDotNet.Infra.csproj", "src/ResiliencePatternsDotNet.Infra/"]
+COPY ["src/ResiliencePatternsDotNet.Domain/ResiliencePatternsDotNet.Domain.csproj", "src/ResiliencePatternsDotNet.Domain/"]
+RUN dotnet restore "src/ResiliencePatternsDotNet.Api/ResiliencePatternsDotNet.Api.csproj"
 COPY . .
-WORKDIR "/src/ResiliencePatternsDotNet.ApiApplication"
-RUN dotnet build "ResiliencePatternsDotNet.ApiApplication.csproj" -c Release -o /app/build
+WORKDIR "/src/src/ResiliencePatternsDotNet.Api"
+RUN dotnet build "ResiliencePatternsDotNet.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "ResiliencePatternsDotNet.ApiApplication.csproj" -c Release -o /app/publish
+RUN dotnet publish "ResiliencePatternsDotNet.Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ResiliencePatternsDotNet.ApiApplication.dll"]
+ENTRYPOINT ["dotnet", "ResiliencePatternsDotNet.Api.dll"]

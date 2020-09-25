@@ -48,6 +48,7 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
                         _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
 
@@ -62,6 +63,7 @@ namespace ResiliencePatternsDotNet.Domain.Services.Resiliences
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
                         _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
 

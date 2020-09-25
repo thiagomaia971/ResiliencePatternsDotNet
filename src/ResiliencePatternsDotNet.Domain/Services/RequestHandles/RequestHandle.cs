@@ -42,57 +42,50 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
             }
         }
 
-        public HttpResponseMessage HandleRequest(int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error) 
+        public HttpResponseMessage HandleRequest(UrlConfigurationSection urlConfiguration) 
             => _configurationSection.RunPolicy switch
                 {
                     RunPolicyEnum.RETRY => HandleClientResult(_resiliencePatterns.RetryPolicy
-                        .ExecuteAndCapture(() => MakeRequest(probabilityErrorPercent, success, error))
+                        .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
                         .Result),
                     RunPolicyEnum.CIRCUIT_BREAKER => HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
-                        .ExecuteAndCapture(() => MakeRequest(probabilityErrorPercent, success, error))
+                        .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
                         .Result),
                     RunPolicyEnum.ALL => HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
                             _resiliencePatterns.CircuitBreakerPolicy.Execute(() =>
-                                MakeRequest(probabilityErrorPercent, success, error)))
+                                MakeRequest(urlConfiguration)))
                         .Result),
-                    RunPolicyEnum.NONE => HandleClientResult(MakeRequest(probabilityErrorPercent, success, error)),
+                    RunPolicyEnum.NONE => HandleClientResult(MakeRequest(urlConfiguration)),
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-        private HttpResponseMessage MakeRequest(int probabilityErrorPercent, UrlFetchConfigurationSection success, UrlFetchConfigurationSection error)
+        private HttpResponseMessage MakeRequest(UrlConfigurationSection urlConfiguration)
         {
-            string actionMethod;
-            string actionUrl;
-            
-            if (ErrorProbabilityService.IsDalayRequest(probabilityErrorPercent))
+            try
             {
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.BaseAddress = new Uri(_configurationSection.UrlConfiguration.BaseUrl);
+                    httpClient.Timeout =
+                        TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
+                    var methodEnum = new HttpMethod(urlConfiguration.Method);
+
+                    var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, urlConfiguration.Action)).GetAwaiter().GetResult();
+                    Console.WriteLine($"Result: {result.StatusCode}");
+
+                    if (result.IsSuccessStatusCode)
+                        _metrics.IncrementeResilienceModuleSuccess();
+
+                    if (_configurationSection.RunPolicy != RunPolicyEnum.NONE && !result.IsSuccessStatusCode)
+                        throw new RequestException(result);
+
+                    return result;
+                }
+            }
+            catch (Exception e)
+            {                        
                 _metrics.IncrementeResilienceModuleError();
-                actionMethod = error.Method;
-                actionUrl = error.Url;
-                Console.WriteLine($"Request With Delay!");
-            }
-            else
-            {
-                _metrics.IncrementeResilienceModuleSuccess();
-                actionMethod = success.Method;
-                actionUrl = success.Url;
-                Console.WriteLine($"Request Normal!");
-            }
-            
-            using (var httpClient = new HttpClient())
-            {
-                httpClient.BaseAddress = new Uri(_configurationSection.UrlConfiguration.BaseUrl);
-                httpClient.Timeout =
-                    TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
-                var methodEnum = new HttpMethod(actionMethod);
-
-                var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, actionUrl)).GetAwaiter().GetResult();
-                Console.WriteLine($"Result: {result.StatusCode}");
-
-                if (_configurationSection.RunPolicy != RunPolicyEnum.NONE && !result.IsSuccessStatusCode)
-                    throw new RequestException(result);
-
-                return result;
+                throw;
             }
         }
 
