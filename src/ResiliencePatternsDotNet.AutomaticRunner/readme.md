@@ -3,14 +3,8 @@
 {
     "UrlConfiguration": {
         "BaseUrl": string,
-        "Success": {
-            "Url": string,
-            "Method": "GET/POST/PUT"
-        },
-        "Error": {
-            "Url": string,
-            "Method": "GET/POST/PUT"
-        }
+        "Action": string,
+        "Method": "GET/POST/PUT"
     },
     "RequestConfiguration": {
         "SuccessRequests": int,
@@ -27,11 +21,11 @@
     },
     "CircuitBreakerConfiguration": {
         "IsSimpleConfiguration": boolean,
-        "DurationOfBreaking": int,
-        "ExceptionsAllowedBeforeBreaking": int,
-        "FailureThreshold": double,
-        "SamplingDuration": int,
-        "MinimumThroughput": int
+        "DurationOfBreaking": int, // (milisecond) duração que o circuito irá ficar aberto.
+        "ExceptionsAllowedBeforeBreaking": int, // (usado somente quando for Simples) quantidade de exceções consecutivas para o circuito ficar aberto.
+        "FailureThreshold": double, // (porcentagem) O limite de falha no qual o circuito será interrompido (um número entre 0 e 1; por exemplo, 0,5 representa a interrupção se 50% ou mais das ações resultarem em uma falha controlada.
+        "SamplingDuration": int, // (milisecond) A duração do tempo sobre o qual as taxas de falha são avaliadas.
+        "MinimumThroughput": int // Número mínimo de requisições no intervalo de tempo descrito pelo SamplingDuration.
     }
 }
 ```
@@ -84,14 +78,8 @@
     "Parameters": {
         "UrlConfiguration": {
             "BaseUrl": string,
-            "Success": {
-            "Url": string,
+            "Action": string,
             "Method": "GET/POST/PUT"
-            },
-            "Error": {
-            "Url": string,
-            "Method": "GET/POST/PUT"
-            }
         },
         "RequestConfiguration": {
             "SuccessRequests": int,
