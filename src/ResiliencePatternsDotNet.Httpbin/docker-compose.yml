@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  vaurien:
+    build: .
+    ports:
+      - 9001:80
+      - 9000:9000
+    # volumes:
+    #   - ./assets/etc:/etc
