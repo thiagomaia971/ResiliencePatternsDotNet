@@ -1,12 +1,31 @@
 version: '3.4'
 
 services:
-  vaurien:
+  httpbin:
     build: 
       context: ./src/ResiliencePatternsDotNet.Httpbin/
     ports:
+      - 9000:80
+    labels:
+      traefik.enable: "true"
+      traefik.vaurien.port: 80
+      traefik.vaurien.frontend.rule: Host:vaurien.docker.localhost
+      traefik.httpbin.port: 9000
+      traefik.httpbin.frontend.rule: Host:httpbin.vaurien.docker.localhost
+
+  vaurien:
+    build: 
+      context: ./src/ResiliencePatternsDotNet.Vaurien/
+    ports:
       - 9001:80
-      - 9000:9000
+    depends_on: 
+      - httpbin
+    labels:
+      traefik.enable: "true"
+      traefik.vaurien.port: 80
+      traefik.vaurien.frontend.rule: Host:vaurien.docker.localhost
+      traefik.httpbin.port: 9000
+      traefik.httpbin.frontend.rule: Host:httpbin.vaurien.docker.localhost
 
   resiliencepatternsdotnet.api:
     image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
@@ -17,3 +36,11 @@ services:
       - 5000:80
     depends_on: 
       - vaurien
+
+  # worker:
+  #   image: ${DOCKER_REGISTRY-}worker
+  #   build:
+  #     context: .
+  #     dockerfile: src/WorkerService/Dockerfile  
+  #   depends_on: 
+  #       - vaurien

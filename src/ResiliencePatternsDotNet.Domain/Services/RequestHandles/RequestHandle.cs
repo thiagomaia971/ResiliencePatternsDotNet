@@ -65,9 +65,9 @@ namespace ResiliencePatternsDotNet.Domain.Services.RequestHandles
             {
                 using (var httpClient = new HttpClient())
                 {
-                    httpClient.BaseAddress = new Uri(_configurationSection.UrlConfiguration.BaseUrl);
-                    httpClient.Timeout =
-                        TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
+                    httpClient.BaseAddress = new Uri("http://vaurien:9001");
+                    // httpClient.Timeout =
+                    //     TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
                     var methodEnum = new HttpMethod(urlConfiguration.Method);
 
                     var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, urlConfiguration.Action)).GetAwaiter().GetResult();
