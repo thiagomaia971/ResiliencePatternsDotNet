@@ -22,35 +22,5 @@ EXPOSE 80
 # httpin port
 EXPOSE 9000
 
-
-#CMD ["gunicorn", "-b", "0.0.0.0:80", "httpbin:app", "-k", "gevent"]
-
-# FROM python:2-alpine
-
-# RUN pip install --upgrade pip
-
-# # install vaurien
-# RUN apk add --no-cache \
-#         gcc \
-#     musl-dev
-# RUN pip install vaurien
-
-# # install httpbin
-# RUN apk add --no-cache \
-#         libffi-dev \
-#         build-base
-# RUN pip install httpbin gunicorn
-
-# # install supervisord
-# RUN apk add --no-cache \
-#     supervisor
-
-# COPY ./assets /
-# CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf" ]
-
-# # vaurien http proxy port
-# EXPOSE 80
-
-# # httpin port
-# EXPOSE 9000
-
+# vaurien api
+EXPOSE 8080

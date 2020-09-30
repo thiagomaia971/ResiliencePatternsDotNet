@@ -3,23 +3,17 @@ version: '3.4'
 services:
   vaurien:
     build: 
-        context: .
-        dockerfile: docker-vaurien-httpbin/Dockerfile
-    network_mode: bridge
-    volumes:
-      - "./docker-vaurien-httpbin/assets/etc:/etc"
-      - "./docker-vaurien-httpbin/assets/etc/vaurien.ini:/etc/vaurien.ini"
+      context: ./src/ResiliencePatternsDotNet.Httpbin/
     ports:
       - 9001:80
       - 9000:9000
 
-  # resiliencepatternsdotnet.api:
-  #   image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
-  #   network_mode: bridge
-  #   build:
-  #     context: .
-  #     dockerfile: src/ResiliencePatternsDotNet.Api/Dockerfile
-  #   ports:
-  #       - 5000:80
-  #   depends_on: 
-  #     - vaurien
+  resiliencepatternsdotnet.api:
+    image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
+    build:
+      context: .
+      dockerfile: src/ResiliencePatternsDotNet.Api/Dockerfile
+    ports:
+      - 5000:80
+    depends_on: 
+      - vaurien
