@@ -7,6 +7,12 @@ services:
     ports:
       - 9001:80
       - 9000:9000
+    labels:
+      traefik.enable: "true"
+      traefik.vaurien.port: 80
+      traefik.vaurien.frontend.rule: Host:vaurien.docker.localhost
+      traefik.httpbin.port: 9000
+      traefik.httpbin.frontend.rule: Host:httpbin.vaurien.docker.localhost
 
   resiliencepatternsdotnet.api:
     image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
