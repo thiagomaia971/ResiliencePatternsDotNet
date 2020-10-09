@@ -1,5 +1,9 @@
 version: '3.4'
 
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
+
 services:
   httpbin:
     build: 
@@ -10,12 +14,33 @@ services:
   vaurien:
     build: 
       context: ./src/ResiliencePatterns.Core.Vaurien/
+    volumes:
+      - ./src/ResiliencePatterns.Core.Vaurien/assets/etc/:/etc/
     ports:
       - 9001:80
     depends_on: 
       - httpbin
+      
+  prometheus:
+    image: linuxtips/prometheus_alpine
+    volumes:
+      - ./src/ResiliencePatterns.Core.Prometheus/:/etc/prometheus/
+      - prometheus_data:/var/lib/prometheus
+#    command:
+#      - '--config.file=/etc/prometheus/prometheus.yml'
+#      - '--storage.tsdb.path=/data'
+    ports:
+      - 9090:9090
 
-  ResiliencePatterns.DotNet.api:
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./src/ResiliencePatterns.Core.Grafana/:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    ports:
+      - 3000:3000
+
+  ResiliencePatternsApi:
     image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
     build:
       context: .
@@ -25,3 +50,5 @@ services:
     depends_on: 
       - vaurien
       - httpbin
+      - prometheus
+      - grafana

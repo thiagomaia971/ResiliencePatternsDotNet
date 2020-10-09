@@ -15,6 +15,7 @@ namespace ResiliencePatterns.DotNet.Api
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseMetricsWebTracking()
+                .UseMetricsWebTracking()
                 .UseMetrics(options =>
                 {
                     options.EndpointOptions = endpointsOptions =>

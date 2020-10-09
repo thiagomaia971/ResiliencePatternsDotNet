@@ -8,13 +8,13 @@ namespace ResiliencePatterns.DotNet.Domain.CommandHandlers
 {
     public abstract class CommandHandler<TCommand, TResult> : IRequestHandler<TCommand, CommandResult<TResult>> where TCommand : ICommand<TResult>
     {
-        public abstract TResult Handle(TCommand command);
+        public abstract Task<TResult> Handle(TCommand command);
 
-        public Task<CommandResult<TResult>> Handle(TCommand request, CancellationToken cancellationToken)
+        public async Task<CommandResult<TResult>> Handle(TCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                return ToResult(Handle(request));
+                return ToResult(await Handle(request));
             }
             catch (Exception e)
             {
@@ -22,10 +22,10 @@ namespace ResiliencePatterns.DotNet.Domain.CommandHandlers
             }
         }
         
-        private static Task<CommandResult<TResult>> ToResult(TResult result)
-            => Task.FromResult(new CommandResult<TResult>(result));
+        private static CommandResult<TResult> ToResult(TResult result)
+            => new CommandResult<TResult>(result);
 
-        private static Task<CommandResult<TResult>> ToResult(Exception excecao)
-            => Task.FromResult(new CommandResult<TResult>(excecao));
+        private static CommandResult<TResult> ToResult(Exception excecao)
+            => new CommandResult<TResult>(excecao);
     }
 }

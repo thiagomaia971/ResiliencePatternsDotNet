@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 using ResiliencePatterns.DotNet.Domain.Configurations;
 using ResiliencePatterns.DotNet.Domain.Entities.Enums;
 using ResiliencePatterns.DotNet.Domain.Exceptions;
@@ -41,22 +42,40 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
         }
 
-        public HttpResponseMessage HandleRequest(UrlConfigurationSection urlConfiguration) 
-            => _configurationSection.RunPolicy switch
-                {
-                    RunPolicyEnum.RETRY => HandleClientResult(_resiliencePatterns.RetryPolicy
+        public async Task<HttpResponseMessage> HandleRequest(UrlConfigurationSection urlConfiguration)
+        {
+            switch (_configurationSection.RunPolicy)
+            {
+                case RunPolicyEnum.RETRY:
+                    return await HandleClientResult(_resiliencePatterns.RetryPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
-                        .Result),
-                    RunPolicyEnum.CIRCUIT_BREAKER => HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
+                        .Result);
+                case RunPolicyEnum.CIRCUIT_BREAKER:
+                    return await HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
-                        .Result),
-                    RunPolicyEnum.ALL => HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
-                            _resiliencePatterns.CircuitBreakerPolicy.Execute(() =>
-                                MakeRequest(urlConfiguration)))
-                        .Result),
-                    RunPolicyEnum.NONE => HandleClientResult(MakeRequest(urlConfiguration)),
-                    _ => throw new ArgumentOutOfRangeException()
-                };
+                        .Result);
+                case RunPolicyEnum.ALL:
+                    return await HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
+                            _resiliencePatterns.CircuitBreakerPolicy.Execute(() => MakeRequest(urlConfiguration)))
+                        .Result);
+                case RunPolicyEnum.NONE:
+                    try
+                    {
+                        return await HandleClientResult(MakeRequest(urlConfiguration));
+                    }
+                    catch (RequestException e)
+                    {
+                        return await HandleClientResult(e.HttpResponseMessage);
+
+                    }
+                    catch (Exception e)
+                    {
+                        return await HandleClientResult(null);
+                    }
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         private HttpResponseMessage MakeRequest(UrlConfigurationSection urlConfiguration)
         {
@@ -75,20 +94,21 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                     if (result.IsSuccessStatusCode)
                         _metrics.IncrementeResilienceModuleSuccess();
 
-                    if (_configurationSection.RunPolicy != RunPolicyEnum.NONE && !result.IsSuccessStatusCode)
+                    if (!result.IsSuccessStatusCode)
                         throw new RequestException(result);
 
                     return result;
                 }
             }
             catch (Exception e)
-            {                        
+            {
+                Console.WriteLine("Result: Unexpected Error");
                 _metrics.IncrementeResilienceModuleError();
                 throw;
             }
         }
 
-        private HttpResponseMessage HandleClientResult(HttpResponseMessage result)
+        private async Task<HttpResponseMessage> HandleClientResult(HttpResponseMessage result)
         {
             if (result?.IsSuccessStatusCode ?? false)
                 _metrics.IncrementClientSuccess();

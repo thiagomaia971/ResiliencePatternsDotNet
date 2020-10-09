@@ -12,7 +12,6 @@ using Newtonsoft.Json.Serialization;
 using ResiliencePatterns.DotNet.Domain.Commands;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Services;
-using ResiliencePatterns.DotNet.Infra;
 
 namespace ResiliencePatterns.DotNet.Api
 {
@@ -29,9 +28,6 @@ namespace ResiliencePatterns.DotNet.Api
         {
             services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
             services.AddMetrics();
-            
-            services.AddDbContext<ResiliencePatternsDotNetDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddTransient<IExecuteService, ExecuteService>();
             services.AddScoped<MetricService>();

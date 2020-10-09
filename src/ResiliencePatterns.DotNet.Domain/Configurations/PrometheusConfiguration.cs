@@ -12,7 +12,7 @@ namespace ResiliencePatterns.DotNet.Domain.Configurations
         public string Hostname { get; set; }
         
         [XmlAttribute("port")]
-        public int Port { get; set; }
+        public int? Port { get; set; }
         
         public object Create(object parent, object configContext, XmlNode section)
         {

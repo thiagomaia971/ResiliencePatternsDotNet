@@ -1,0 +1,44 @@
+{
+	"Run": true,
+	"Count": 25,
+	"AsyncClients": true,
+	"UrlFetch": {
+	  "BaseUrl": "http://localhost:5001",
+	  "ActionUrl": "/execute",
+	  "Method": "POST"
+	},
+	"ResultType": "CSV",
+	"ProxyConfiguration": {
+		"DockerComposePath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet",
+		"VaurienConfigPath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet/src/ResiliencePatterns.Core.Vaurien/assets/etc/vaurien.ini",
+		"RestartVaurienContainerCommand": "docker-compose restart vaurien",
+		"Behavior": "0:blackout,0:delay,50:error,0:hang"
+	},
+	"Parameters": {
+		"UrlConfiguration": {
+			"BaseUrl": "http://vaurien:80",
+			"Action": "",
+			"Method": "GET"
+		},
+		"RequestConfiguration": {
+			"SuccessRequests": 10,
+			"MaxRequests": 10,
+			"Delay": 0,
+			"Timeout": 3600000
+		},
+		"RunPolicy": "NONE",
+		"RetryConfiguration": {
+			"Count": 1,
+			"SleepDuration": 500,
+			"SleepDurationType": "EXPONENTIAL_BACKOFF"
+		},
+		"CircuitBreakerConfiguration": {
+			"IsSimpleConfiguration": true,
+			"DurationOfBreaking": 30000,
+			"ExceptionsAllowedBeforeBreaking": 2,
+			"FailureThreshold": 0.5,
+			"SamplingDuration": 5000,
+			"MinimumThroughput": 20
+		}
+	  }
+}

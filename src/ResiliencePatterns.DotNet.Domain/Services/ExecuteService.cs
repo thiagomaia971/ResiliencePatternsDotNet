@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Prometheus;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Extensions;
@@ -19,7 +22,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
         public ExecuteService(MetricService metricService) 
             => _metrics = metricService;
 
-        public MetricStatus Execute(ConfigurationSection configurationSection)
+        public Task<MetricStatus> Execute(ConfigurationSection configurationSection)
         {
             Console.WriteLine($"EnvironmentValue: {GlobalVariables.EnvironmentValue}");
             Console.WriteLine($"Teste:     {configurationSection.ToJson()}");
@@ -27,31 +30,35 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             
             ResiliencePatterns = new Resiliences.ResiliencePatterns(configurationSection, _metrics);
             RequestHandle = new RequestHandle(ResiliencePatterns, configurationSection, _metrics);
-            // InitializePrometheusServer();
+            // InitializePrometheusServer(configurationSection);
 
             return ProcessRequests(configurationSection);
         }
         
         private void InitializePrometheusServer(ConfigurationSection configurationSection)
         {
+            if (configurationSection.PrometheusConfiguration == null || string.IsNullOrEmpty(configurationSection.PrometheusConfiguration.Hostname) ||
+                !configurationSection.PrometheusConfiguration.Port.HasValue)
+                return;
+            
             var prometheusConfigurationHostname = configurationSection.PrometheusConfiguration.Hostname;
             var prometheusConfigurationPort = configurationSection.PrometheusConfiguration.Port;
             new MetricServer(
                     hostname: prometheusConfigurationHostname,
-                    port: prometheusConfigurationPort)
+                    port: prometheusConfigurationPort.Value)
                 .Start();
         }
 
-        private MetricStatus ProcessRequests(ConfigurationSection configurationSection)
+        private async Task<MetricStatus> ProcessRequests(ConfigurationSection configurationSection)
         {
             _metrics.StartWatchTime();
-            
+
             while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests && 
                    _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests)
             {
                 Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
                 
-                ProcessRequest(configurationSection);
+                await ProcessRequest(configurationSection);
                 
                 Thread.Sleep(configurationSection.RequestConfiguration.Delay);
                 
@@ -65,7 +72,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             return _metrics.MetricStatus;
         }
 
-        private HttpResponseMessage ProcessRequest(ConfigurationSection configurationSection) 
+        private Task<HttpResponseMessage> ProcessRequest(ConfigurationSection configurationSection) 
             => RequestHandle.HandleRequest(configurationSection.UrlConfiguration);
     }
 }

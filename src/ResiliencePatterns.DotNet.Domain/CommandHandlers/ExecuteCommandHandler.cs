@@ -1,4 +1,5 @@
-﻿using ResiliencePatterns.DotNet.Domain.Commands;
+﻿using System.Threading.Tasks;
+using ResiliencePatterns.DotNet.Domain.Commands;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Services;
 
@@ -11,7 +12,7 @@ namespace ResiliencePatterns.DotNet.Domain.CommandHandlers
         public ExecuteCommandHandler(IExecuteService executeService) 
             => _executeService = executeService;
 
-        public override MetricStatus Handle(ExecuteCommand command) 
+        public override Task<MetricStatus> Handle(ExecuteCommand command) 
             => _executeService.Execute(command);
     }
 }

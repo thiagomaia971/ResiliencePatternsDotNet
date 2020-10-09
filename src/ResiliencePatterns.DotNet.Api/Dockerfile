@@ -7,7 +7,6 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["src/ResiliencePatterns.DotNet.Api/ResiliencePatterns.DotNet.Api.csproj", "src/ResiliencePatterns.DotNet.Api/"]
-COPY ["src/ResiliencePatterns.DotNet.Infra/ResiliencePatterns.DotNet.Infra.csproj", "src/ResiliencePatterns.DotNet.Infra/"]
 COPY ["src/ResiliencePatterns.DotNet.Domain/ResiliencePatterns.DotNet.Domain.csproj", "src/ResiliencePatterns.DotNet.Domain/"]
 RUN dotnet restore "src/ResiliencePatterns.DotNet.Api/ResiliencePatterns.DotNet.Api.csproj"
 COPY . .

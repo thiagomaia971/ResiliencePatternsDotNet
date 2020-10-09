@@ -10,7 +10,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
     public class ResultWriterService
     {
         private readonly AutomaticRunnerConfiguration _automaticRunnerConfiguration;
-        private IDictionary<ResultType, Action<Scenario, int, HttpResponseMessage>> resultTypeHandler = new Dictionary<ResultType, Action<Scenario, int, HttpResponseMessage>>
+        private IDictionary<ResultType, Action<Scenario>> resultTypeHandler = new Dictionary<ResultType, Action<Scenario>>
         {
             { ResultType.TXT, WriteTxt },
             { ResultType.CSV, WriteCsv },
@@ -19,25 +19,25 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         public ResultWriterService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
             => _automaticRunnerConfiguration = automaticRunnerConfiguration;
 
-        public void Write(Scenario scenario, int count, HttpResponseMessage result) 
-            => resultTypeHandler[scenario.ResultType](scenario, count, result);
+        public void Write(Scenario scenario) 
+            => resultTypeHandler[scenario.ResultType](scenario);
 
-        private static void WriteTxt(Scenario scenario, int count, HttpResponseMessage result)
+        private static void WriteTxt(Scenario scenario)
         {
-            var contentJsonUnPrettyfied = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            var jsonElement = JsonConvert.DeserializeObject(contentJsonUnPrettyfied);
+            var count = 1;
+            foreach (var result in scenario.Results)
+            {
+                var contentJsonUnPrettyfied = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var jsonElement = JsonConvert.DeserializeObject(contentJsonUnPrettyfied);
 
-            using var streamWriter = new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}[{count}].result");
-            streamWriter.Write(JsonConvert.SerializeObject(jsonElement, Formatting.Indented));
+                using var streamWriter = new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}[{count}].result");
+                streamWriter.Write(JsonConvert.SerializeObject(jsonElement, Formatting.Indented));
+                count++;
+            }
         }
 
-        private static void WriteCsv(Scenario scenario, int count, HttpResponseMessage result)
+        private static void WriteCsv(Scenario scenario)
         {
-            scenario.Results.Add(result);
-
-            if (scenario.Results.Count != scenario.Count) 
-                return;
-            
             lock (scenario)
             {
                 if (File.Exists(scenario.ResultPath)) 
