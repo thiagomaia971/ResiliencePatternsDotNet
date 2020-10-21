@@ -60,29 +60,38 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(scenario));
             
-            ConfigProxy(scenario);
-            
-            Console.WriteLine("Start sending");
-            if (File.Exists(scenario.ResultPath))
-                File.Delete(scenario.ResultPath);
-
-            if (scenario.AsyncClients)
+            foreach (var subScenario in scenario.Count)
             {
-                var tasks = new List<Task<HttpResponseMessage>>();
-                for (var i = 0; i < scenario.Count; i++)
-                    tasks.Add(MakeRequestAsync(scenario));
+                scenario.SubScenario = subScenario;
+                Console.WriteLine();
+                Console.WriteLine($"SubScenario: {subScenario}");
+                Console.WriteLine();
+                
+                ConfigProxy(scenario);
+                
+                Console.WriteLine("Start sending");
+                if (File.Exists(scenario.ResultPath))
+                    File.Delete(scenario.ResultPath);
 
-                var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
-                scenario.Results.AddRange(results);
+                if (scenario.AsyncClients)
+                {
+                    var tasks = new List<Task<HttpResponseMessage>>();
+                    for (var i = 0; i < subScenario; i++)
+                        tasks.Add(MakeRequestAsync(scenario));
+
+                    var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
+                    scenario.Results.AddRange(results);
+                }
+                else
+                {
+                    for (var i = 0; i < subScenario; i++)
+                        scenario.Results.Add(MakeRequest(scenario));
+                }
+                
+                _resultWriterService.Write(scenario);
+                scenario.Results.Clear();
+                Thread.Sleep(5000);
             }
-            else
-            {
-                for (var i = 0; i < scenario.Count; i++)
-                    scenario.Results.Add(MakeRequest(scenario));
-            }
-            
-            _resultWriterService.Write(scenario);
-            Thread.Sleep(5000);
         }
 
         private void ConfigProxy(Scenario scenario)

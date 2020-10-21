@@ -20,8 +20,15 @@ namespace ResiliencePatterns.Core.AutomaticRunner
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            _scenarioService.ProcessScenarios();
+            try
+            {
+                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                _scenarioService.ProcessScenarios();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             
             while (!stoppingToken.IsCancellationRequested)
             {

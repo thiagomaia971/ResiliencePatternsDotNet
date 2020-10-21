@@ -47,7 +47,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     onRetry: (exception, timeout) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
-                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout.Milliseconds);
                         Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
@@ -62,7 +62,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     onRetry: (exception, timeout) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
-                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout);
+                        _metricService.RetryMetric.IncrementRetryTotalTimeout(timeout.Milliseconds);
                         Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
@@ -84,7 +84,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     onBreak: (exception, timeOfBreak) =>
                     {
                         _metricService.CircuitBreakerMetric.IncrementBreakCount();
-                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak);
+                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak.Milliseconds);
                         Console.WriteLine($"\tBreak for [{timeOfBreak}]");
                     },
                     onReset: () => Console.WriteLine($"\tReseted"));
@@ -100,7 +100,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     onBreak: (exception, timeOfBreak) =>
                     {
                         _metricService.CircuitBreakerMetric.IncrementBreakCount();
-                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak);
+                        _metricService.CircuitBreakerMetric.IncrementBreakTime(timeOfBreak.Milliseconds);
                         Console.WriteLine($"\tBreak for [{timeOfBreak}]");
                     },
                     onReset: () =>

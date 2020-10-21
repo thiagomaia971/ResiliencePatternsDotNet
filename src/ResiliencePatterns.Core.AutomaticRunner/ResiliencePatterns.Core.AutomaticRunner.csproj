@@ -21,4 +21,26 @@
         <PackageReference Include="prometheus-net" Version="3.5.0" />
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="scenarios\CIRCUIT_BREAKER" />
+      <Folder Include="scenarios\RETRY" />
+      <Folder Include="scenarios\SEM_PADRAO" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="scenarios\100_SUCESSO_SEM_PADRAO\100_SUCESSO_SEM_PADRAO_100.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\100_SUCESSO_SEM_PADRAO\100_SUCESSO_SEM_PADRAO_25.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\100_SUCESSO_SEM_PADRAO\100_SUCESSO_SEM_PADRAO_50.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\50_SUCESSO_SEM_PADRAO\50_SUCESSO_SEM_PADRAO_100.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\50_SUCESSO_SEM_PADRAO\50_SUCESSO_SEM_PADRAO_25.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\50_SUCESSO_SEM_PADRAO\50_SUCESSO_SEM_PADRAO_50.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\SEM_PADRAO\100_SUCESSO_RETRY\100_SUCESSO_RETRY_100.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\SEM_PADRAO\100_SUCESSO_RETRY\100_SUCESSO_RETRY_25.scenario.json" />
+      <_ContentIncludedByDefault Remove="scenarios\SEM_PADRAO\100_SUCESSO_RETRY\100_SUCESSO_RETRY_50.scenario.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ResiliencePatternsDotNet.DotNet.Commons\ResiliencePatternsDotNet.DotNet.Commons.csproj" />
+    </ItemGroup>
 </Project>

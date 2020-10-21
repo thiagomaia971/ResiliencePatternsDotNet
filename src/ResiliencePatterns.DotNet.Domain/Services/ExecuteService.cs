@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +7,7 @@ using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Extensions;
 using ResiliencePatterns.DotNet.Domain.Services.RequestHandles;
 using ResiliencePatterns.DotNet.Domain.Services.Resiliences;
+using ResiliencePatternsDotNet.DotNet.Commons;
 using ConfigurationSection = ResiliencePatterns.DotNet.Domain.Configurations.ConfigurationSection;
 
 namespace ResiliencePatterns.DotNet.Domain.Services

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using App.Metrics;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Extensions;
+using ResiliencePatternsDotNet.DotNet.Commons;
 
 namespace ResiliencePatterns.DotNet.Domain.Services
 {
@@ -46,7 +47,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
         public void StopWatchTime()
         {
             _stopwatch?.Stop();
-            _metricStatus.AddTotalTime(_stopwatch?.Elapsed);
+            _metricStatus.AddTotalTime(_stopwatch?.ElapsedMilliseconds);
         }
 
         public void IncrementClientSuccess()
@@ -72,41 +73,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             _metricStatus.ResilienceModuleToExternalService.IncrementeSuccess();
             _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleSucess);
         }
-    }
 
-    public abstract class MetricResilicienceModuleStatus
-    {
-    }
-
-    public class MetricRetryStatus : MetricResilicienceModuleStatus
-    {
-        public int RetryCount { get; private set; }
-        public string TotalTimeout => _totalTimeout.ToExtensiveValue();
-        private TimeSpan _totalTimeout { get; set; }
-
-        public MetricRetryStatus() 
-            => _totalTimeout = new TimeSpan();
-
-        public void IncrementRetryCount() => RetryCount++;
-
-        public void IncrementRetryTotalTimeout(TimeSpan timeout) => _totalTimeout = _totalTimeout.Add(timeout);
-    }
-
-    public class MetricCircuitBreakerStatus : MetricResilicienceModuleStatus
-    {
-        public int BreakCount { get; set; }
-        public int ResetStatCount { get; set; }
-        public string TotalOfBreak => _timeOfBreak.ToExtensiveValue();
-        
-        private TimeSpan _timeOfBreak { get; set; }
-
-        public MetricCircuitBreakerStatus() 
-            => _timeOfBreak = new TimeSpan();
-        
-        public void IncrementBreakCount() => BreakCount++;
-
-        public void IncrementBreakTime(TimeSpan timeOfBreak) => _timeOfBreak = _timeOfBreak.Add(timeOfBreak);
-
-        public void IncrementResetStat() => ResetStatCount++;
+        public void IncrementeResilienceModuleSuccessTime(long milliseconds) 
+            => _metricStatus.ResilienceModuleToExternalService.IncrementeSuccessTime(milliseconds);
     }
 }

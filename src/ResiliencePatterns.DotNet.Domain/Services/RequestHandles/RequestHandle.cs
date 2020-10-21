@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ResiliencePatterns.DotNet.Domain.Configurations;
@@ -83,6 +84,9 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             {
                 using (var httpClient = new HttpClient())
                 {
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
+                    
                     httpClient.BaseAddress = new Uri(_configurationSection.UrlConfiguration.BaseUrl);
                     httpClient.Timeout =
                         TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
@@ -90,9 +94,14 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 
                     var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, urlConfiguration.Action)).GetAwaiter().GetResult();
                     Console.WriteLine($"Result: {result.StatusCode}");
+                    
+                    stopWatch.Stop();
 
                     if (result.IsSuccessStatusCode)
+                    {
                         _metrics.IncrementeResilienceModuleSuccess();
+                        _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
+                    }
 
                     if (!result.IsSuccessStatusCode)
                         throw new RequestException(result);

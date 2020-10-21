@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using Newtonsoft.Json;
 using ResiliencePatterns.Core.AutomaticRunner.Configurations;
+using ResiliencePatternsDotNet.DotNet.Commons;
 
 namespace ResiliencePatterns.Core.AutomaticRunner.Services
 {
@@ -50,22 +51,15 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                     foreach (var httpResponseMessage in scenario.Results)
                     {
                         var contentJsonUnPrettyfied = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                        var jsonElement = JsonConvert.DeserializeObject<dynamic>(contentJsonUnPrettyfied);
+                        var jsonElement = JsonConvert.DeserializeObject<MetricStatus>(contentJsonUnPrettyfied);
                         
-                        streamWriter.WriteLine($"{jsonElement.TotalTime}; {jsonElement.ClientToModule.Success}; {jsonElement.ClientToModule.Error}; {jsonElement.ResilienceModuleToExternalService.Success}; {jsonElement.ResilienceModuleToExternalService.Error}; {(jsonElement.RetryMetrics == null ? "" : jsonElement.RetryMetrics.RetryCount)}; {(jsonElement.RetryMetrics == null ? "" : jsonElement.RetryMetrics.TotalTimeout)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.BreakCount)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.ResetStatCount)}; {(jsonElement.CircuitBreakerMetrics == null ? "" : jsonElement.CircuitBreakerMetrics.TotalOfBreak)}");
+                        streamWriter.WriteLine(jsonElement.GetCsvLine());
                     }
                 }
             }
         }
 
-        private static void WriteCsv()
-        {
-            
-        }
-
-        private static void WriteHeaderCsv(StreamWriter streamWriter)
-        {
-            streamWriter.WriteLine("Total Time; ClientToModule Success; ClientToModule Error; ResilienceModuleToExternalService Success; ResilienceModuleToExternalService Error; Retry Count; Retry TotalTimeout; CircuitBreaker Count; CircuitBreaker ResetCount; CircuitBreaker TotalOfBreaker");
-        }
+        private static void WriteHeaderCsv(TextWriter streamWriter) 
+            => streamWriter.WriteLine(MetricStatus.GetCsvHeader());
     }
 }
