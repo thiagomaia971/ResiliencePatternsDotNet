@@ -1,5 +1,5 @@
 {
-	"Run": false,
+	"Run": true,
 	"Count": [25, 50, 100],
 	"AsyncClients": true,
 	"UrlFetch": {
@@ -26,7 +26,7 @@
 			"Delay": 0,
 			"Timeout": 360000
 		},
-		"RunPolicy": "NONE",
+		"RunPolicy": "RETRY",
 		"RetryConfiguration": {
 			"Count": 1,
 			"SleepDuration": 500,

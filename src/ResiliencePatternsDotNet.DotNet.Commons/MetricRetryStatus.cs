@@ -1,8 +1,13 @@
-﻿namespace ResiliencePatternsDotNet.DotNet.Commons
+﻿using Newtonsoft.Json;
+
+namespace ResiliencePatternsDotNet.DotNet.Commons
 {
     public class MetricRetryStatus : MetricResilicienceModuleStatus
     {
+        [JsonProperty]
         public int RetryCount { get; private set; }
+        
+        [JsonProperty]
         public long TotalTimeout { get; set; }
 
         public void IncrementRetryCount() => RetryCount++;

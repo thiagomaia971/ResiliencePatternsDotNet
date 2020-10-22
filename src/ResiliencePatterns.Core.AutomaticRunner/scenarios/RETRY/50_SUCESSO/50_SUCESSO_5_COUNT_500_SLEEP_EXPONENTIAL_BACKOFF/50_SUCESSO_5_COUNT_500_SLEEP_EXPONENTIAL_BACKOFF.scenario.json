@@ -1,5 +1,5 @@
 {
-	"Run": false,
+	"Run": true,
 	"Count": [25, 50, 100],
 	"AsyncClients": true,
 	"UrlFetch": {
@@ -12,7 +12,7 @@
 		"DockerComposePath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet",
 		"VaurienConfigPath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet/src/ResiliencePatterns.Core.Vaurien/assets/etc/vaurien.ini",
 		"RestartVaurienContainerCommand": "docker-compose restart vaurien",
-		"Behavior": "0:blackout,0:delay,0:error,0:hang"
+		"Behavior": "0:blackout,0:delay,50:error,0:hang"
 	},
 	"Parameters": {
 		"UrlConfiguration": {
@@ -24,11 +24,11 @@
 			"SuccessRequests": 10,
 			"MaxRequests": 50,
 			"Delay": 0,
-			"Timeout": 360000
+			"Timeout": 3600000
 		},
-		"RunPolicy": "NONE",
+		"RunPolicy": "RETRY",
 		"RetryConfiguration": {
-			"Count": 1,
+			"Count": 5,
 			"SleepDuration": 500,
 			"SleepDurationType": "EXPONENTIAL_BACKOFF"
 		},

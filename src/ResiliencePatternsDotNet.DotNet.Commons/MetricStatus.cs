@@ -1,13 +1,23 @@
 ﻿using System.Text;
+using Newtonsoft.Json;
 
 namespace ResiliencePatternsDotNet.DotNet.Commons
 {
     public class MetricStatus
     {
+        [JsonProperty]
         public long? TotalTime { get; private set; }
+        
+        [JsonProperty]
         public MetricCountStatus ClientToModule { get; private set; }
+        
+        [JsonProperty]
         public MetricCountStatus ResilienceModuleToExternalService { get; private set; }
+        
+        [JsonProperty]
         public MetricRetryStatus RetryMetrics { get; private set; }
+        
+        [JsonProperty]
         public MetricCircuitBreakerStatus CircuitBreakerMetrics { get; private set; }
 
         protected MetricStatus()
@@ -32,6 +42,7 @@ namespace ResiliencePatternsDotNet.DotNet.Commons
             valueString.Append("ResilienceModuleToExternalService Success; ");
             valueString.Append("ResilienceModuleToExternalService Error; ");
             valueString.Append("ResilienceModuleToExternalService TotalSuccessTime; ");
+            valueString.Append("ResilienceModuleToExternalService TotalSuccessTimePerRequest; ");
             valueString.Append("Retry Count; ");
             valueString.Append("Retry TotalTimeout; ");
             valueString.Append("CircuitBreaker Count; ");
@@ -51,6 +62,7 @@ namespace ResiliencePatternsDotNet.DotNet.Commons
             valueString.Append($"{ResilienceModuleToExternalService.Success}; ");
             valueString.Append($"{ResilienceModuleToExternalService.Error}; ");
             valueString.Append($"{ResilienceModuleToExternalService.TotalSuccessTime}; ");
+            valueString.Append($"{ResilienceModuleToExternalService.TotalSuccessTimePerRequest}; ");
             valueString.Append($"{RetryMetrics?.RetryCount}; ");
             valueString.Append($"{RetryMetrics?.TotalTimeout}; ");
             valueString.Append($"{CircuitBreakerMetrics?.BreakCount}; ");
