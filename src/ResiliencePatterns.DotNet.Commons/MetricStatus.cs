@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 
-namespace ResiliencePatternsDotNet.DotNet.Commons
+namespace ResiliencePatternsDotNet.Commons
 {
     public class MetricStatus
     {

@@ -7,7 +7,7 @@ using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Extensions;
 using ResiliencePatterns.DotNet.Domain.Services.RequestHandles;
 using ResiliencePatterns.DotNet.Domain.Services.Resiliences;
-using ResiliencePatternsDotNet.DotNet.Commons;
+using ResiliencePatternsDotNet.Commons;
 using ConfigurationSection = ResiliencePatterns.DotNet.Domain.Configurations.ConfigurationSection;
 
 namespace ResiliencePatterns.DotNet.Domain.Services

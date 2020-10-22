@@ -3,7 +3,7 @@ using System.Diagnostics;
 using App.Metrics;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Extensions;
-using ResiliencePatternsDotNet.DotNet.Commons;
+using ResiliencePatternsDotNet.Commons;
 
 namespace ResiliencePatterns.DotNet.Domain.Services
 {

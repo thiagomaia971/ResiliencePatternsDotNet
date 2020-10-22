@@ -1,4 +1,4 @@
-﻿namespace ResiliencePatternsDotNet.DotNet.Commons
+﻿namespace ResiliencePatternsDotNet.Commons
 {
     public abstract class MetricResilicienceModuleStatus
     {

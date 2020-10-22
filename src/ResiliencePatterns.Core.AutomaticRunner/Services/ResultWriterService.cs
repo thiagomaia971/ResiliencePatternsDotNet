@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Http;
 using Newtonsoft.Json;
 using ResiliencePatterns.Core.AutomaticRunner.Configurations;
-using ResiliencePatternsDotNet.DotNet.Commons;
+using ResiliencePatternsDotNet.Commons;
 
 namespace ResiliencePatterns.Core.AutomaticRunner.Services
 {

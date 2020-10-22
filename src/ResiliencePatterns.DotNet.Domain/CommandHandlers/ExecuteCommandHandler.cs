@@ -2,7 +2,7 @@
 using ResiliencePatterns.DotNet.Domain.Commands;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Services;
-using ResiliencePatternsDotNet.DotNet.Commons;
+using ResiliencePatternsDotNet.Commons;
 
 namespace ResiliencePatterns.DotNet.Domain.CommandHandlers
 {

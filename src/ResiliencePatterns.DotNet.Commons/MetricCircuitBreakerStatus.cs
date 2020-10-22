@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ResiliencePatternsDotNet.DotNet.Commons
+namespace ResiliencePatternsDotNet.Commons
 {
     public class MetricCircuitBreakerStatus : MetricResilicienceModuleStatus
     {
