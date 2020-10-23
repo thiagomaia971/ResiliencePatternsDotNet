@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using Newtonsoft.Json;
-using ResiliencePatterns.Core.AutomaticRunner.Configurations;
 using ResiliencePatternsDotNet.Commons;
+using ResiliencePatternsDotNet.Commons.Configurations;
 
 namespace ResiliencePatterns.Core.AutomaticRunner.Services
 {
@@ -15,6 +15,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         {
             { ResultType.TXT, WriteTxt },
             { ResultType.CSV, WriteCsv },
+            { ResultType.JSON, WriteJson },
         };
 
         public ResultWriterService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
@@ -28,11 +29,8 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             var count = 1;
             foreach (var result in scenario.Results)
             {
-                var contentJsonUnPrettyfied = result.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var jsonElement = JsonConvert.DeserializeObject(contentJsonUnPrettyfied);
-
                 using var streamWriter = new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}[{count}].result");
-                streamWriter.Write(JsonConvert.SerializeObject(jsonElement, Formatting.Indented));
+                streamWriter.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
                 count++;
             }
         }
@@ -49,12 +47,23 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                 {
                     WriteHeaderCsv(streamWriter);
                     foreach (var httpResponseMessage in scenario.Results)
-                    {
-                        var contentJsonUnPrettyfied = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                        var jsonElement = JsonConvert.DeserializeObject<MetricStatus>(contentJsonUnPrettyfied);
-                        
-                        streamWriter.WriteLine(jsonElement.GetCsvLine());
-                    }
+                        streamWriter.WriteLine(httpResponseMessage.GetCsvLine());
+                }
+            }
+        }
+
+        private static void WriteJson(Scenario scenario)
+        {
+            lock (scenario)
+            {
+                if (File.Exists(scenario.ResultPath)) 
+                    return;
+                
+                using (var streamWriter =
+                    new StreamWriter(scenario.ResultPath))
+                {
+                    var contentJsonUnPrettyfied = JsonConvert.SerializeObject(scenario.Results, Formatting.Indented);
+                    streamWriter.WriteLine(contentJsonUnPrettyfied);
                 }
             }
         }

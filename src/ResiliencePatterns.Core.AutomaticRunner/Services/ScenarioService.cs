@@ -8,7 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using ResiliencePatterns.Core.AutomaticRunner.Configurations;
+using ResiliencePatternsDotNet.Commons;
+using ResiliencePatternsDotNet.Commons.Configurations;
 
 namespace ResiliencePatterns.Core.AutomaticRunner.Services
 {
@@ -30,28 +31,8 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                 ProcessScenario(scenario);
         }
 
-        private IEnumerable<Scenario> LoadScenarios()
-        {
-            var scenariosPath = System.IO.Directory.GetFiles(_automaticRunnerConfiguration.ScenariosPath, "*.scenario.json", SearchOption.AllDirectories);;
-            var scenarios = new List<Scenario>();
-            foreach (var scenarioFile in scenariosPath)
-            {
-                using (var streamReader = new StreamReader(scenarioFile))
-                {
-                    var scenarioJson = streamReader.ReadToEnd();
-                    var scenario = JsonConvert.DeserializeObject<Scenario>(scenarioJson);
-                    if (!scenario.Run)
-                        continue;
-                    
-                    scenario.Directory = Path.GetDirectoryName(scenarioFile);
-                    scenario.FileName = Path.GetFileName(scenarioFile);
-                    scenario.FileNameWithoutExtension = Path.GetFileNameWithoutExtension(scenarioFile);
-                    scenarios.Add(scenario);
-                }
-            }
-
-            return scenarios;
-        }
+        private IEnumerable<Scenario> LoadScenarios() 
+            => ScenarioUtils.LoadScenarios(_automaticRunnerConfiguration.ScenariosPath);
 
         private void ProcessScenario(Scenario scenario)
         {
@@ -75,7 +56,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
                 if (scenario.AsyncClients)
                 {
-                    var tasks = new List<Task<HttpResponseMessage>>();
+                    var tasks = new List<Task<MetricStatus>>();
                     for (var i = 0; i < subScenario; i++)
                         tasks.Add(MakeRequestAsync(scenario));
 
@@ -127,7 +108,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             Thread.Sleep(10000);
         }
 
-        private async Task<HttpResponseMessage> MakeRequestAsync(Scenario scenario)
+        private async Task<MetricStatus> MakeRequestAsync(Scenario scenario)
         {
             using (var httpClient = new HttpClient())
             {
@@ -151,13 +132,13 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                         Console.WriteLine(httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult());
                         Console.ForegroundColor = ConsoleColor.White;
                         
-                        return  httpResponseMessage;
+                        return  JsonConvert.DeserializeObject<MetricStatus>(httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult());
                     })
                     .ConfigureAwait(false);
             }
         }
 
-        private HttpResponseMessage MakeRequest(Scenario scenario) 
+        private MetricStatus MakeRequest(Scenario scenario) 
             => MakeRequestAsync(scenario).GetAwaiter().GetResult();
     }
 }

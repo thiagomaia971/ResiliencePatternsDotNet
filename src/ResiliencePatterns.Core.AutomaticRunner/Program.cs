@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ResiliencePatterns.Core.AutomaticRunner.Configurations;
 using ResiliencePatterns.Core.AutomaticRunner.Services;
+using ResiliencePatternsDotNet.Commons.Configurations;
 
 namespace ResiliencePatterns.Core.AutomaticRunner
 {

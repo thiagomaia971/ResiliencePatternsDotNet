@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace ResiliencePatterns.Core.AutomaticRunner.Configurations
+namespace ResiliencePatternsDotNet.Commons.Configurations
 {
     [XmlRoot("automatic-runner")]
     public class AutomaticRunnerConfiguration : IConfigurationSectionHandler

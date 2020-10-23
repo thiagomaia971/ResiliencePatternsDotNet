@@ -33,6 +33,8 @@ namespace ResiliencePatternsDotNet.Commons
         public void CreateCircuitBrekerCustom() => CircuitBreakerMetrics = new MetricCircuitBreakerStatus();
         public void AddTotalTime(long? totalTime) => TotalTime = totalTime;
 
+        public long TotalSuccessTimePerRequest => ResilienceModuleToExternalService.TotalSuccessTimePerRequest;
+
         public static string GetCsvHeader()
         {
             var valueString = new StringBuilder();

@@ -1,8 +1,37 @@
 ﻿@page "/"
+@using C1.Chart
+@using C1.Blazor.Chart
+@using System.IO
+@using ResiliencePatternsDotNet.Commons
+@using BlazorInputFile
+@using Newtonsoft.Json
 
+<InputFile OnChange="HandleFileSelected" Multiple/>
 
-<h1>Hello, world!</h1>
+@foreach (var chart in charts)
+{
+    <FlexChart ItemsSource="@chart.ScenarioResults" HeaderContent="@chart.ScenarioFileName">
+        <SeriesCollection>
+            <Series Binding="TotalSuccessTimePerRequest" />
+        </SeriesCollection>
+    </FlexChart>
+}
 
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private List<ScenarioChart> charts = new List<ScenarioChart>();
+    async Task HandleFileSelected(IFileListEntry[] files)
+    {
+        charts = new List<ScenarioChart>();
+        foreach (var arquivo in files)
+        {
+            using (var streamReader = new StreamReader(arquivo.Data))
+            {
+                charts.Add(new ScenarioChart
+                {
+                    ScenarioFileName = arquivo.Name,
+                    ScenarioResults = JsonConvert.DeserializeObject<MetricStatus[]>(await streamReader.ReadToEndAsync()).ToList()
+                });
+            }
+        }
+    }
+}

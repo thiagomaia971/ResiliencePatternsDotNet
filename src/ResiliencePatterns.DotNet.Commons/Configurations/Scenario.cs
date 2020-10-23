@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 
-namespace ResiliencePatterns.Core.AutomaticRunner.Configurations
+namespace ResiliencePatternsDotNet.Commons.Configurations
 {
     public class Scenario
     {
@@ -17,10 +17,10 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Configurations
         public ResultType ResultType { get; set; }
         public object Parameters { get; set; }
 
-        public string ResultPath => $"{Directory}\\[{SubScenario}]{FileNameWithoutExtension}-result.csv";
-        public List<HttpResponseMessage> Results { get; set; }
+        public string ResultPath => $"{Directory}\\[{SubScenario}]{FileNameWithoutExtension}-result.{ResultType.ToString().ToLower()}";
+        public List<MetricStatus> Results { get; set; }
         public bool AsyncClients { get; set; }
 
-        public Scenario() => Results = new List<HttpResponseMessage>();
+        public Scenario() => Results = new List<MetricStatus>();
     }
 }
