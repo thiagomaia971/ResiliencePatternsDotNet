@@ -3,16 +3,14 @@ using Newtonsoft.Json;
 
 namespace ResiliencePatternsDotNet.Commons
 {
+    
     public class MetricStatus
     {
         [JsonProperty]
-        public long? TotalTime { get; private set; }
+        public ClientToModuleMetric ClientToModule { get; private set; }
         
         [JsonProperty]
-        public MetricCountStatus ClientToModule { get; private set; }
-        
-        [JsonProperty]
-        public MetricCountStatus ResilienceModuleToExternalService { get; private set; }
+        public ResilienceModuleToExternalMetric ResilienceModuleToExternalService { get; private set; }
         
         [JsonProperty]
         public MetricRetryStatus RetryMetrics { get; private set; }
@@ -22,8 +20,8 @@ namespace ResiliencePatternsDotNet.Commons
 
         protected MetricStatus()
         {
-            ClientToModule = new MetricCountStatus();
-            ResilienceModuleToExternalService = new MetricCountStatus();
+            ClientToModule = new ClientToModuleMetric();
+            ResilienceModuleToExternalService = new ResilienceModuleToExternalMetric();
         }
         
         public static MetricStatus Create() 
@@ -31,14 +29,12 @@ namespace ResiliencePatternsDotNet.Commons
         
         public void CreateRetryCustom() => RetryMetrics = new MetricRetryStatus();
         public void CreateCircuitBrekerCustom() => CircuitBreakerMetrics = new MetricCircuitBreakerStatus();
-        public void AddTotalTime(long? totalTime) => TotalTime = totalTime;
-
-        public long TotalSuccessTimePerRequest => ResilienceModuleToExternalService.TotalSuccessTimePerRequest;
 
         public static string GetCsvHeader()
         {
             var valueString = new StringBuilder();
-            valueString.Append("Total Time; ");
+            valueString.Append("ClientToModule TotalTime; ");
+            valueString.Append("ClientToModule AverageTime; ");
             valueString.Append("ClientToModule Success; ");
             valueString.Append("ClientToModule Error; ");
             valueString.Append("ResilienceModuleToExternalService Success; ");
@@ -58,13 +54,14 @@ namespace ResiliencePatternsDotNet.Commons
         {
             var valueString = new StringBuilder();
 
-            valueString.Append($"{TotalTime}; ");
+            valueString.Append($"{ClientToModule.TotalTime}; ");
+            valueString.Append($"{ClientToModule.AverageTimePerRequest}; ");
             valueString.Append($"{ClientToModule.Success}; ");
             valueString.Append($"{ClientToModule.Error}; ");
             valueString.Append($"{ResilienceModuleToExternalService.Success}; ");
             valueString.Append($"{ResilienceModuleToExternalService.Error}; ");
             valueString.Append($"{ResilienceModuleToExternalService.TotalSuccessTime}; ");
-            valueString.Append($"{ResilienceModuleToExternalService.TotalSuccessTimePerRequest}; ");
+            valueString.Append($"{ResilienceModuleToExternalService.AverageSuccessTimePerRequest}; ");
             valueString.Append($"{RetryMetrics?.RetryCount}; ");
             valueString.Append($"{RetryMetrics?.TotalTimeout}; ");
             valueString.Append($"{CircuitBreakerMetrics?.BreakCount}; ");

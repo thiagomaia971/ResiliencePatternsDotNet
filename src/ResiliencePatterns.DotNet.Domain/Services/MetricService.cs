@@ -38,18 +38,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             // _metrics.Measure.Counter.Decrement(_metricsRegistry.IncrementSuccessRequest, _metricStatus.SuccessRequest);
         }
 
-        public void StartWatchTime()
-        {
-            _stopwatch = new System.Diagnostics.Stopwatch();
-            _stopwatch.Start();
-        }
-
-        public void StopWatchTime()
-        {
-            _stopwatch?.Stop();
-            _metricStatus.AddTotalTime(_stopwatch?.ElapsedMilliseconds);
-        }
-
         public void IncrementClientSuccess()
         {
             _metricStatus.ClientToModule.IncrementeSuccess();
@@ -76,5 +64,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         public void IncrementeResilienceModuleSuccessTime(long milliseconds) 
             => _metricStatus.ResilienceModuleToExternalService.IncrementeSuccessTime(milliseconds);
+
+        public void IncrementClientTotalTime(long watchElapsedMilliseconds) 
+            => _metricStatus.ClientToModule.IncrementTime(watchElapsedMilliseconds);
     }
 }

@@ -8,13 +8,17 @@
 
 <InputFile OnChange="HandleFileSelected" Multiple/>
 
+<FlexChart HeaderContent="Tempo médio das requisições bem sucedidas" ChartType="ChartType.Funnel">
+    <SeriesCollection>
+        @foreach (var chart in charts)
+        {
+            <Series Name="@chart.ScenarioFileName" Binding="TotalSuccessTimePerRequest" ItemsSource="@chart.ScenarioResults"/>
+        }
+    </SeriesCollection>
+</FlexChart>
+
 @foreach (var chart in charts)
 {
-    <FlexChart ItemsSource="@chart.ScenarioResults" HeaderContent="@chart.ScenarioFileName">
-        <SeriesCollection>
-            <Series Binding="TotalSuccessTimePerRequest" />
-        </SeriesCollection>
-    </FlexChart>
 }
 
 @code {

@@ -12,16 +12,8 @@ namespace ResiliencePatternsDotNet.Commons
 
         [JsonProperty]
         public int Total => Success + Error;
-        
-        [JsonProperty]
-        public long TotalSuccessTime { get; private set; }
-
-        [JsonProperty] public long TotalSuccessTimePerRequest => TotalSuccessTime / Success;
 
         public void IncrementeSuccess() => Success++;
         public void IncrementeError() => Error++;
-
-        public void IncrementeSuccessTime(long milliseconds) 
-            => TotalSuccessTime += milliseconds;
     }
 }

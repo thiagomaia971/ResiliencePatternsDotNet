@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,14 +51,17 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         private async Task<MetricStatus> ProcessRequests(ConfigurationSection configurationSection)
         {
-            _metrics.StartWatchTime();
-
             while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests && 
                    _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests)
             {
                 Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
+                var watch = new Stopwatch();
+                watch.Start();
                 
                 await ProcessRequest(configurationSection);
+                
+                watch.Stop();
+                _metrics.IncrementClientTotalTime(watch.ElapsedMilliseconds);
                 
                 Thread.Sleep(configurationSection.RequestConfiguration.Delay);
                 
@@ -67,7 +71,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
             _metrics.ResetAll();
             
-            _metrics.StopWatchTime();
             return _metrics.MetricStatus;
         }
 

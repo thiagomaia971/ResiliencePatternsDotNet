@@ -36,6 +36,10 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
         private void ProcessScenario(Scenario scenario)
         {
+            long xx = 39455;
+            int x = 19;
+
+            var result = (double) xx / (double) x;
             Console.WriteLine();
             Console.WriteLine($"Scenario: {scenario.FileName}");
             Console.WriteLine();
