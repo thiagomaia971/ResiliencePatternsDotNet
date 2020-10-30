@@ -31,6 +31,7 @@ public class CircuitBreakerPattern implements Pattern {
 		long time = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 		boolean aux = Try.ofSupplier(decoratedSupplier).recover(throwable -> false).get();
+		time = System.currentTimeMillis() - time;
 		result.getResilienceModuleToExternalService().setTotalSuccessTime(
 				result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
 		return aux;

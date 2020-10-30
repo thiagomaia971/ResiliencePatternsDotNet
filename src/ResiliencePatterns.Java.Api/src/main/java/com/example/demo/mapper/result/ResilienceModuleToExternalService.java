@@ -6,12 +6,14 @@ public class ResilienceModuleToExternalService {
 	private Integer error;
 	private Integer total;
 	private Long totalSuccessTime;
+	private Float averageSuccessTimePerRequest;
 	
 	public ResilienceModuleToExternalService() {
 		this.success = 0;
 		this.error = 0;
 		this.total = 0;
 		this.totalSuccessTime = 0L;
+		this.setAverageSuccessTimePerRequest(0F);
 	}
 	
 	public Integer getSuccess() {
@@ -40,6 +42,16 @@ public class ResilienceModuleToExternalService {
 	public void setTotalSuccessTime(Long totalSuccessTime) {
 		this.totalSuccessTime = totalSuccessTime;
 	}
+
+	public Float getAverageSuccessTimePerRequest() {
+		return averageSuccessTimePerRequest;
+	}
+
+	public void setAverageSuccessTimePerRequest(Float averageSuccessTimePerRequest) {
+		this.averageSuccessTimePerRequest = averageSuccessTimePerRequest;
+	}
+
+	
 	
 	
 }

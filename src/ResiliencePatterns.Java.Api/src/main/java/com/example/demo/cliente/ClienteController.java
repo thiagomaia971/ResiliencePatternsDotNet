@@ -27,10 +27,10 @@ public class ClienteController {
 	@PostMapping("/")
 	public ResponseEntity<?> normalRequests(@RequestBody(required = false) Options options) {
 		Result result = new Result();
-		long time = System.currentTimeMillis();
 		
 		Pattern pattern = this.getPattern(options, result);
 		
+		long time = System.currentTimeMillis();
 		for (int i = 0; i < options.getRequestConfiguration().getMaxRequests() && 
 						result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests() ; i++) {
 			if(pattern.request(result, options)) {
@@ -40,11 +40,15 @@ public class ClienteController {
 			}
 		}
 		time = System.currentTimeMillis() - time;
-		result.setTotalTime(time);
+		result.getClientToModule().setTotalTime(time);
+		result.getClientToModule().setTotal(result.getClientToModule().getSuccess() + result.getClientToModule().getError());
+		result.getClientToModule().setAverageTimePerRequest((float) result.getClientToModule().getTotalTime() / result.getClientToModule().getTotal() );
+		
+		
 		
 		if(result.getResilienceModuleToExternalService().getSuccess() > 0) {
-			result.getResilienceModuleToExternalService().setTotalSuccessTime(
-					result.getResilienceModuleToExternalService().getTotalSuccessTime() / 
+			result.getResilienceModuleToExternalService().setAverageSuccessTimePerRequest( 
+					(float) result.getResilienceModuleToExternalService().getTotalSuccessTime() / 
 					result.getResilienceModuleToExternalService().getSuccess() );
 		}
 		

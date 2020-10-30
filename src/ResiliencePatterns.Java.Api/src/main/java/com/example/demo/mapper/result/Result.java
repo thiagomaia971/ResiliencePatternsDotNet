@@ -1,26 +1,19 @@
 package com.example.demo.mapper.result;
 
 public class Result {
-	private Long totalTime;
 	private ClientToModule clientToModule;
 	private ResilienceModuleToExternalService resilienceModuleToExternalService;
 	private RetryMetrics retryMetrics;
 	private CircuitBreakerMetrics circuitBreakerMetrics;
 	
 	public Result() {
-		this.totalTime = 0L;
 		this.clientToModule = new ClientToModule();
 		this.resilienceModuleToExternalService = new ResilienceModuleToExternalService();
 		this.retryMetrics = new RetryMetrics();
 		this.circuitBreakerMetrics = new CircuitBreakerMetrics();
 	}
 	
-	public Long getTotalTime() {
-		return totalTime;
-	}
-	public void setTotalTime(Long totalTime) {
-		this.totalTime = totalTime;
-	}
+	
 	public ClientToModule getClientToModule() {
 		return clientToModule;
 	}
