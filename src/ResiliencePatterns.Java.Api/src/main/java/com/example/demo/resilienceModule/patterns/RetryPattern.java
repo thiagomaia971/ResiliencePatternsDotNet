@@ -21,6 +21,8 @@ public class RetryPattern implements Pattern {
 	private Retry retry;
 
 	private CheckedFunction0<Boolean> retryableSupplier;
+	
+	private long time;
 
 	public RetryPattern(Options params, Result result) {
 		connector = new Connector(params.getUrlConfiguration(), params.getRequestConfiguration().getTimeout());
@@ -29,12 +31,14 @@ public class RetryPattern implements Pattern {
 
 	@Override
 	public boolean request(Result result, Options options) {
-		long time = System.currentTimeMillis();
+		time = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 		if(Try.of(retryableSupplier).recover(throwable -> {
 			//so se quebrar o maximo de vezes
 			return false;
 		}).get()) {
+			//entra no começo
+			System.out.println("foi");
 			time = System.currentTimeMillis() - time;
 			result.getResilienceModuleToExternalService().setTotalSuccessTime(
 					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
@@ -68,6 +72,7 @@ public class RetryPattern implements Pattern {
 
 		retry.getEventPublisher()
 		.onSuccess(event -> {
+			
 			//result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 			//result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
 		})
@@ -77,6 +82,9 @@ public class RetryPattern implements Pattern {
 			//result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		}).onRetry(event -> {
+			System.out.println("falhou, vai retentar");
+			time = System.currentTimeMillis();
+			
 			result.getRetryMetrics().setRetryCount(result.getRetryMetrics().getRetryCount() + 1);
 			//System.out.println("falhou, vai retentar");
 			result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
