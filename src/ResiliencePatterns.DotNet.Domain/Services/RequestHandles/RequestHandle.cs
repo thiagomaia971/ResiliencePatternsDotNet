@@ -101,7 +101,9 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                     {
                         _metrics.IncrementeResilienceModuleSuccess();
                         _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
-                    }
+                    }else
+                        _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
+                    
 
                     if (!result.IsSuccessStatusCode)
                         throw new RequestException(result);

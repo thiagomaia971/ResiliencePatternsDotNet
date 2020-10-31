@@ -36,47 +36,51 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
         private void ProcessScenario(Scenario scenario)
         {
-            long xx = 39455;
-            int x = 19;
-
-            var result = (double) xx / (double) x;
             Console.WriteLine();
             Console.WriteLine($"Scenario: {scenario.FileName}");
             Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(scenario));
-            
-            foreach (var subScenario in scenario.Count)
+            ConfigProxy(scenario);
+
+            for (var count = 1; count <= scenario.Count; count++)
             {
-                scenario.SubScenario = subScenario;
                 Console.WriteLine();
-                Console.WriteLine($"SubScenario: {subScenario}");
+                Console.WriteLine($"    Bateria de Teste: {count}");
                 Console.WriteLine();
-                
-                ConfigProxy(scenario);
-                
-                Console.WriteLine("Start sending");
-                if (File.Exists(scenario.ResultPath))
-                    File.Delete(scenario.ResultPath);
 
-                if (scenario.AsyncClients)
+                foreach (var subScenario in scenario.Clients)
                 {
-                    var tasks = new List<Task<MetricStatus>>();
-                    for (var i = 0; i < subScenario; i++)
-                        tasks.Add(MakeRequestAsync(scenario));
-
-                    var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
-                    scenario.Results.AddRange(results);
-                }
-                else
-                {
-                    for (var i = 0; i < subScenario; i++)
-                        scenario.Results.Add(MakeRequest(scenario));
-                }
+                    Console.WriteLine();
+                    Console.WriteLine($"        SubScenario: {subScenario}");
+                    Console.WriteLine();
                 
-                _resultWriterService.Write(scenario);
-                scenario.Results.Clear();
-                Thread.Sleep(5000);
+                    Console.WriteLine("         Start sending");
+                    if (File.Exists(scenario.ResultPath(count, subScenario)))
+                        File.Delete(scenario.ResultPath(count, subScenario));
+                    
+                    // scenario.Results.Add();
+                    // scenario.Results.Add(count, new List<MetricStatus>());
+
+                    if (scenario.AsyncClients)
+                    {
+                        var tasks = new List<Task<MetricStatus>>();
+                        for (var i = 0; i < subScenario; i++)
+                            tasks.Add(MakeRequestAsync(scenario));
+
+                        var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
+                        foreach (var result in results)
+                            scenario.AddResult(count, subScenario, result);
+                    }
+                    else
+                    {
+                        for (var i = 0; i < subScenario; i++)
+                            scenario.AddResult(count, subScenario, MakeRequest(scenario));
+                    }
+                }
             }
+                
+            _resultWriterService.Write(scenario);
+            // scenario.Results.Clear();
         }
 
         private void ConfigProxy(Scenario scenario)

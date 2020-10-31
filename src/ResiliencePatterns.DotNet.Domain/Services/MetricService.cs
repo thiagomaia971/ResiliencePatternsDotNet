@@ -67,5 +67,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         public void IncrementClientTotalTime(long watchElapsedMilliseconds) 
             => _metricStatus.ClientToModule.IncrementTime(watchElapsedMilliseconds);
+
+        public void IncrementeResilienceModuleErrorTime(in long stopWatchElapsedMilliseconds) 
+            => _metricStatus.ResilienceModuleToExternalService.IncrementeErrorTime(stopWatchElapsedMilliseconds);
     }
 }

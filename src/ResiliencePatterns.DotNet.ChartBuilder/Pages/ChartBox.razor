@@ -9,23 +9,26 @@
 @using System.IO
 @inject NavigationManager NavigationManager
 
-<div class="row" style="margin-top: 100px">
+<div class="row">
     <InputFile OnChange="HandleFileSelected" Multiple />
 </div>
 <div class="row">
     <div class="col-lg-12 control-section">
-        <SfChart @ref="@ChartObj" Title="Employee Age Group in Various Department">
+        <SfChart @ref="@ChartObj" Title="Médias das requisições">
             <ChartEvents Load="ChartLoad" />
             <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
             <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
                 <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
             </ChartPrimaryXAxis>
-            <ChartPrimaryYAxis  Title="Age">
+            @*<ChartPrimaryYAxis Title="Age">
                 <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
                 <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
-            </ChartPrimaryYAxis>
+            </ChartPrimaryYAxis>*@
             <ChartSeriesCollection>
-                <ChartSeries DataSource="@ChartData" XName="x" YName="y" Name="Department" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
+                <ChartSeries DataSource="@AverageClientModuleChart" XName="x" YName="y" Name="Média Client -> Módulo" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
+                    <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
+                </ChartSeries>
+                <ChartSeries DataSource="@AverageModuleServiceChart" XName="x" YName="y" Name="Média Módulo -> Serviço" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
                     <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
                 </ChartSeries>
             </ChartSeriesCollection>
@@ -56,7 +59,7 @@
             new Data(){ ID= "Normal"},
             new Data(){ ID= "Exclusive"},
             new Data(){ ID= "Inclusive"}
-                };
+                    };
     private void ChangeType(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string> args)
     {
         this.BoxPlot = (BoxPlotMode)Enum.Parse(typeof(BoxPlotMode), args.Value.ToString(), true);
@@ -65,12 +68,11 @@
     public class BoxandWhiskerData
     {
         public string x { get; set; }
-        public double[] y { get; set; }
+        public long[] y { get; set; }
     }
-    public List<BoxandWhiskerData> ChartData = new List<BoxandWhiskerData>
-    {
-        new BoxandWhiskerData { x= "Development", y= new double[]{ 5000, 22, 23, 25, 25, 25, 26, 27, 27, 28, 28, 29, 30, 32, 34, 32, 34, 36, 35, 38 }}
-    };
+    public List<BoxandWhiskerData> AverageClientModuleChart = new List<BoxandWhiskerData>();
+    public List<BoxandWhiskerData> AverageModuleServiceChart = new List<BoxandWhiskerData>();
+
     string CurrentUri;
 
     async Task HandleFileSelected(IFileListEntry[] files)
@@ -87,12 +89,16 @@
                 });
             }
         }
-        ChartData = charts.Select(x => new BoxandWhiskerData
+        AverageClientModuleChart = charts.Select(x => new BoxandWhiskerData
         {
             x = x.ScenarioFileName,
-            y = x.ScenarioResults.Select(y => y.ClientToModule.AverageTimePerRequest).ToArray()
+            y = x.ScenarioResults.Where(z => z != null).Select(y => y.ClientToModule.TotalTime).ToArray()
         }).ToList();
-        Console.WriteLine(JsonConvert.SerializeObject(ChartData));
+        AverageModuleServiceChart = charts.Select(x => new BoxandWhiskerData
+        {
+            x = x.ScenarioFileName,
+            y = x.ScenarioResults.Where(z => z != null).Select(y => y.ResilienceModuleToExternalService.TotalSuccessTime).ToArray()
+        }).ToList();
         StateHasChanged();
     }
 

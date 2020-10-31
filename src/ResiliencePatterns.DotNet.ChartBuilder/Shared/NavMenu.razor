@@ -1,24 +1,51 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">ChartBuilder</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+﻿@if (collapseNavMenu)
+{
+    <div class="top-row pl-4 navbar navbar-dark">
+        <a class="navbar-brand" href="">ChartBuilder</a>
+        <button class="navbar-toggler" @onclick="ToggleNavMenu" style="display: block;">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="chart-box-plot">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Chart box plot
-            </NavLink>
-        </li>
-    </ul>
-</div>
+    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> Home
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="chart-box-plot">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Chart box plot
+                </NavLink>
+            </li>
+        </ul>
+    </div>    
+}
+else
+{
+    <div class="top-row pl-4 navbar navbar-dark">
+        <button class="navbar-toggler" @onclick="ToggleNavMenu" style="display: block;">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+
+    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <ul class="nav flex-column">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="oi oi-home" aria-hidden="true"></span> 
+                </NavLink>
+            </li>
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="chart-box-plot">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span>
+                </NavLink>
+            </li>
+        </ul>
+    </div>
+}
+
 
 @code {
     private bool collapseNavMenu = true;
