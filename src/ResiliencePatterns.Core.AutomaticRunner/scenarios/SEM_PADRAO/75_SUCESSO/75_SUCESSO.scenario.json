@@ -1,7 +1,7 @@
 {
 	"Run": true,
 	"Count": 10,
-	"Clients": [1, 5],
+	"Clients": [25, 50, 100],
 	"AsyncClients": true,
 	"UrlFetch": {
 		"BaseUrl": "http://localhost:5001",
@@ -23,7 +23,7 @@
 		},
 		"RequestConfiguration": {
 			"SuccessRequests": 50,
-			"MaxRequests": 50,
+			"MaxRequests": 1000,
 			"Delay": 0,
 			"Timeout": 360000
 		},

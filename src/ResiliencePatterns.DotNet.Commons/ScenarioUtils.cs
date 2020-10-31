@@ -39,4 +39,10 @@ namespace ResiliencePatternsDotNet.Commons
         public string ScenarioFileName { get; set; }
         public List<MetricStatus> ScenarioResults { get; set; }
     }
+
+    public class ScenarioChartCompiled
+    {
+        public string ScenarioFileName { get; set; }
+        public List<MetricStatusCompiled> ScenarioResults { get; set; }
+    }
 }

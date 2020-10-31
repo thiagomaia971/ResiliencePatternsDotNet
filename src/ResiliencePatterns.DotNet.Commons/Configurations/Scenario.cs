@@ -20,22 +20,22 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
         public object Parameters { get; set; }
 
         public string ResultPath(int bateria, int subScenario) => $"{Directory}\\{bateria}\\[{subScenario}]{FileNameWithoutExtension}-result.{ResultType.ToString().ToLower()}";
-        public string ResultPath(int subScenario) => $"{Directory}\\[{subScenario}]{FileNameWithoutExtension}-result.{ResultType.ToString().ToLower()}";
-        public List<BateriaResult> Results { get; set; }
+        public string ResultCompiledPath(int subScenario) => $"{Directory}\\[{subScenario}]{FileNameWithoutExtension}-result-compiled.{ResultType.ToString().ToLower()}";
+        public List<BateriaResult> Bateries { get; set; }
         public bool AsyncClients { get; set; }
 
-        public Scenario() => Results = new List<BateriaResult>();
+        public Scenario() => Bateries = new List<BateriaResult>();
 
         public void AddResult(int bateria, int client, MetricStatus result)
         {
-            var bateriaResult = Results.FirstOrDefault(x => x.Count == bateria);
+            var bateriaResult = Bateries.FirstOrDefault(x => x.Count == bateria);
             if (bateriaResult == null)
             {
                 bateriaResult = new BateriaResult
                 {
                     Count = bateria
                 };
-                Results.Add(bateriaResult);
+                Bateries.Add(bateriaResult);
             }
 
             var clientResult = bateriaResult.ClientResults.FirstOrDefault(x => x.Count == client);

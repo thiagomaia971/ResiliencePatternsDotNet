@@ -38,29 +38,21 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         {
             Console.WriteLine();
             Console.WriteLine($"Scenario: {scenario.FileName}");
-            Console.WriteLine();
             Console.WriteLine(JsonConvert.SerializeObject(scenario));
             ConfigProxy(scenario);
 
             for (var count = 1; count <= scenario.Count; count++)
             {
-                Console.WriteLine();
                 Console.WriteLine($"    Bateria de Teste: {count}");
-                Console.WriteLine();
 
                 foreach (var subScenario in scenario.Clients)
                 {
-                    Console.WriteLine();
                     Console.WriteLine($"        SubScenario: {subScenario}");
-                    Console.WriteLine();
-                
                     Console.WriteLine("         Start sending");
+                    
                     if (File.Exists(scenario.ResultPath(count, subScenario)))
                         File.Delete(scenario.ResultPath(count, subScenario));
                     
-                    // scenario.Results.Add();
-                    // scenario.Results.Add(count, new List<MetricStatus>());
-
                     if (scenario.AsyncClients)
                     {
                         var tasks = new List<Task<MetricStatus>>();
@@ -80,7 +72,6 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
                 
             _resultWriterService.Write(scenario);
-            // scenario.Results.Clear();
         }
 
         private void ConfigProxy(Scenario scenario)
