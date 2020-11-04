@@ -1,10 +1,23 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace ResiliencePatternsDotNet.Commons.Configurations
 {
     public class Scenario
+    {
+        public bool Run { get; set; }
+        public int Count { get; set; }
+        public int[] Clients { get; set; }
+        public UrlFetchConfigurationSection UrlFetch { get; set; }
+        public ProxyConfigurationSection ProxyConfiguration { get; set; }
+        public ResultType ResultType { get; set; }
+        public object Parameters { get; set; }
+        public bool AsyncClients { get; set; }
+    }
+    
+    public class ScenarioInput
     {
         public string Directory { get; set; }
         public string FileName { get; set; }
@@ -24,7 +37,7 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
         public List<BateriaResult> Bateries { get; set; }
         public bool AsyncClients { get; set; }
 
-        public Scenario() => Bateries = new List<BateriaResult>();
+        public ScenarioInput() => Bateries = new List<BateriaResult>();
 
         public void AddResult(int bateria, int client, MetricStatus result)
         {
@@ -49,6 +62,12 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
             }
             
             clientResult.Result.Add(result);
+        }
+
+        public Scenario ToScenario()
+        {
+            var scenario = JsonConvert.SerializeObject(this);
+            return JsonConvert.DeserializeObject<Scenario>(scenario);
         }
     }
 

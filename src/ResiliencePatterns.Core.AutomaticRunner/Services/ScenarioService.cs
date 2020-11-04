@@ -31,22 +31,25 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                 ProcessScenario(scenario);
         }
 
-        private IEnumerable<Scenario> LoadScenarios() 
+        private IEnumerable<ScenarioInput> LoadScenarios() 
             => ScenarioUtils.LoadScenarios(_automaticRunnerConfiguration.ScenariosPath);
 
-        private void ProcessScenario(Scenario scenario)
+        private void ProcessScenario(ScenarioInput scenario)
         {
             Console.WriteLine();
-            Console.WriteLine($"Scenario: {scenario.FileName}");
+            Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
             Console.WriteLine(JsonConvert.SerializeObject(scenario));
             ConfigProxy(scenario);
 
             for (var count = 1; count <= scenario.Count; count++)
             {
-                Console.WriteLine($"    Bateria de Teste: {count}");
+                Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
+                Console.WriteLine($"    Bateria de Teste: {count}/{scenario.Count}");
 
                 foreach (var subScenario in scenario.Clients)
                 {
+                    Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
+                    Console.WriteLine($"    Bateria de Teste: {count}/{scenario.Count}");
                     Console.WriteLine($"        SubScenario: {subScenario}");
                     Console.WriteLine("         Start sending");
                     
@@ -74,7 +77,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             _resultWriterService.Write(scenario);
         }
 
-        private void ConfigProxy(Scenario scenario)
+        private void ConfigProxy(ScenarioInput scenario)
         {
             Console.WriteLine($"Config Proxy to {scenario.ProxyConfiguration.Behavior}");
             
@@ -107,7 +110,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             Thread.Sleep(10000);
         }
 
-        private async Task<MetricStatus> MakeRequestAsync(Scenario scenario)
+        private async Task<MetricStatus> MakeRequestAsync(ScenarioInput scenario)
         {
             using (var httpClient = new HttpClient())
             {
@@ -137,7 +140,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private MetricStatus MakeRequest(Scenario scenario) 
+        private MetricStatus MakeRequest(ScenarioInput scenario) 
             => MakeRequestAsync(scenario).GetAwaiter().GetResult();
     }
 }

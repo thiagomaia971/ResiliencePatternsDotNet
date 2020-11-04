@@ -10,16 +10,16 @@ namespace ResiliencePatternsDotNet.Commons
 {
     public static class ScenarioUtils
     {
-        public static IEnumerable<Scenario> LoadScenarios(string path)
+        public static IEnumerable<ScenarioInput> LoadScenarios(string path)
         {
             var scenariosPath = System.IO.Directory.GetFiles(path, "*.scenario.json", SearchOption.AllDirectories);
-            var scenarios = new List<Scenario>();
+            var scenarios = new List<ScenarioInput>();
             foreach (var scenarioFile in scenariosPath)
             {
                 using (var streamReader = new StreamReader(scenarioFile))
                 {
                     var scenarioJson = streamReader.ReadToEnd();
-                    var scenario = JsonConvert.DeserializeObject<Scenario>(scenarioJson);
+                    var scenario = JsonConvert.DeserializeObject<ScenarioInput>(scenarioJson);
                     if (!scenario.Run)
                         continue;
                     

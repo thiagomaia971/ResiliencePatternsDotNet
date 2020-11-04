@@ -13,7 +13,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
     public class ResultWriterService
     {
         private readonly AutomaticRunnerConfiguration _automaticRunnerConfiguration;
-        private IDictionary<ResultType, Action<Scenario>> resultTypeHandler = new Dictionary<ResultType, Action<Scenario>>
+        private IDictionary<ResultType, Action<ScenarioInput>> resultTypeHandler = new Dictionary<ResultType, Action<ScenarioInput>>
         {
             { ResultType.TXT, WriteTxt },
             { ResultType.CSV, WriteCsv },
@@ -23,10 +23,10 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         public ResultWriterService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
             => _automaticRunnerConfiguration = automaticRunnerConfiguration;
 
-        public void Write(Scenario scenario) 
+        public void Write(ScenarioInput scenario) 
             => resultTypeHandler[scenario.ResultType](scenario);
 
-        private static void WriteTxt(Scenario scenario)
+        private static void WriteTxt(ScenarioInput scenario)
         {
             var count = 1;
             foreach (var result in scenario.Bateries)
@@ -37,7 +37,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private static void WriteCsv(Scenario scenario)
+        private static void WriteCsv(ScenarioInput scenario)
         {
             // lock (scenario)
             // {
@@ -57,16 +57,38 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             // }
         }
 
-        private static void WriteJson(Scenario scenario)
+        private static void WriteJson(ScenarioInput scenario)
         {
             lock (scenario)
             {
                 WriteEachClientResultJson(scenario);
                 WriteCompiledResultJson(scenario);
+                WriteScenario(scenario);
             }
         }
 
-        private static void WriteEachClientResultJson(Scenario scenario)
+        private static void WriteScenario(ScenarioInput scenario)
+        {
+            scenario.Run = false;
+            try
+            {
+
+                using (var streamWriter =
+                    new StreamWriter($"{scenario.Directory}\\{scenario.FileName}"))
+                {
+                    var contentJsonUnPrettyfied =
+                        JsonConvert.SerializeObject(scenario.ToScenario(), Formatting.Indented);
+                    streamWriter.WriteLine(contentJsonUnPrettyfied);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private static void WriteEachClientResultJson(ScenarioInput scenario)
         {
             foreach (var scenarioResult in scenario.Bateries)
             {
@@ -86,7 +108,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private static void WriteCompiledResultJson(Scenario scenario)
+        private static void WriteCompiledResultJson(ScenarioInput scenario)
         {
             var baterias = scenario.Bateries.SelectMany(x => x.ClientResults).GroupBy(x => x.Count).ToList();
             foreach (var bateriaGrouped in baterias)

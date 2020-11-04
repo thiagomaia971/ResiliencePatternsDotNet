@@ -1,5 +1,5 @@
 {
-	"Run": false,
+	"Run": true,
 	"Count": 10,
 	"Clients": [25, 50, 100],
 	"AsyncClients": true,
@@ -22,8 +22,8 @@
 			"Method": "GET"
 		},
 		"RequestConfiguration": {
-			"SuccessRequests": 10,
-			"MaxRequests": 50,
+			"SuccessRequests": 50,
+			"MaxRequests": 1000,
 			"Delay": 0,
 			"Timeout": 3600000
 		},
