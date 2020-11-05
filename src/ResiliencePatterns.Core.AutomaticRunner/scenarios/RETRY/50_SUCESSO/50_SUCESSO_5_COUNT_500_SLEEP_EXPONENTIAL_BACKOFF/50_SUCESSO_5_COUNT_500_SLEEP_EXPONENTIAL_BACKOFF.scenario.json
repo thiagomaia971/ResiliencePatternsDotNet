@@ -1,6 +1,7 @@
 {
 	"Run": true,
-	"Count": [25, 50, 100],
+	"Count": 10,
+	"Clients": [25, 50, 100],
 	"AsyncClients": true,
 	"UrlFetch": {
 		"BaseUrl": "http://localhost:5001",
@@ -21,8 +22,8 @@
 			"Method": "GET"
 		},
 		"RequestConfiguration": {
-			"SuccessRequests": 10,
-			"MaxRequests": 50,
+			"SuccessRequests": 50,
+			"MaxRequests": 1000,
 			"Delay": 0,
 			"Timeout": 3600000
 		},
@@ -30,7 +31,8 @@
 		"RetryConfiguration": {
 			"Count": 5,
 			"SleepDuration": 500,
-			"SleepDurationType": "EXPONENTIAL_BACKOFF"
+			"SleepDurationType": "EXPONENTIAL_BACKOFF",
+			"ExponentialBackoffPow": 1.5
 		},
 		"CircuitBreakerConfiguration": {
 			"IsSimpleConfiguration": true,

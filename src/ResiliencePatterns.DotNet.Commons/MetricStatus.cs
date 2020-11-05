@@ -3,6 +3,15 @@ using Newtonsoft.Json;
 
 namespace ResiliencePatternsDotNet.Commons
 {
+    public class MetricStatusCompiled
+    {
+        public double ClientToModuleTotalTime { get; set; }
+        public double ClientToModulePercentualError { get; set; }
+        public double ResilienceModuleToExternalTotalSuccessTime { get; set; }
+        public double ResilienceModuleToExternalTotalErrorTime { get; set; }
+        public double ResilienceModuleToExternalTotalTime { get; set; }
+        public double ResilienceModuleToExternalAverageTimePerRequest { get; set; }
+    }
     
     public class MetricStatus
     {

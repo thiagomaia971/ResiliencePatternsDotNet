@@ -16,6 +16,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         public MetricService(IMetrics metrics, MetricsRegistry metricsRegistry)
         {
+            Console.WriteLine("Instanciou MetricService");
             _metrics = metrics;
             _metricsRegistry = metricsRegistry;
             _metricStatus = MetricStatus.Create();
@@ -67,5 +68,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         public void IncrementClientTotalTime(long watchElapsedMilliseconds) 
             => _metricStatus.ClientToModule.IncrementTime(watchElapsedMilliseconds);
+
+        public void IncrementeResilienceModuleErrorTime(in long stopWatchElapsedMilliseconds) 
+            => _metricStatus.ResilienceModuleToExternalService.IncrementeErrorTime(stopWatchElapsedMilliseconds);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using Newtonsoft.Json;
+using ResiliencePatterns.Core.AutomaticRunner.Extensions;
 using ResiliencePatternsDotNet.Commons;
 using ResiliencePatternsDotNet.Commons.Configurations;
 
@@ -11,7 +13,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
     public class ResultWriterService
     {
         private readonly AutomaticRunnerConfiguration _automaticRunnerConfiguration;
-        private IDictionary<ResultType, Action<Scenario>> resultTypeHandler = new Dictionary<ResultType, Action<Scenario>>
+        private IDictionary<ResultType, Action<ScenarioInput>> resultTypeHandler = new Dictionary<ResultType, Action<ScenarioInput>>
         {
             { ResultType.TXT, WriteTxt },
             { ResultType.CSV, WriteCsv },
@@ -21,13 +23,13 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         public ResultWriterService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
             => _automaticRunnerConfiguration = automaticRunnerConfiguration;
 
-        public void Write(Scenario scenario) 
+        public void Write(ScenarioInput scenario) 
             => resultTypeHandler[scenario.ResultType](scenario);
 
-        private static void WriteTxt(Scenario scenario)
+        private static void WriteTxt(ScenarioInput scenario)
         {
             var count = 1;
-            foreach (var result in scenario.Results)
+            foreach (var result in scenario.Bateries)
             {
                 using var streamWriter = new StreamWriter($"{scenario.Directory}\\{scenario.FileNameWithoutExtension}[{count}].result");
                 streamWriter.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
@@ -35,34 +37,101 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private static void WriteCsv(Scenario scenario)
+        private static void WriteCsv(ScenarioInput scenario)
+        {
+            // lock (scenario)
+            // {
+            //     foreach (var scenarioResult in scenario.Results)
+            //     {
+            //         if (File.Exists(scenario.ResultPath(scenarioResult.Key))) 
+            //             return;
+            //     
+            //         using (var streamWriter =
+            //             new StreamWriter(scenario.ResultPath(scenarioResult.Key)))
+            //         {
+            //             WriteHeaderCsv(streamWriter);
+            //             foreach (var httpResponseMessage in scenarioResult.Value)
+            //                 streamWriter.WriteLine(httpResponseMessage.GetCsvLine());
+            //         }
+            //     }
+            // }
+        }
+
+        private static void WriteJson(ScenarioInput scenario)
         {
             lock (scenario)
             {
-                if (File.Exists(scenario.ResultPath)) 
-                    return;
-                
+                WriteEachClientResultJson(scenario);
+                WriteCompiledResultJson(scenario);
+                WriteScenario(scenario);
+            }
+        }
+
+        private static void WriteScenario(ScenarioInput scenario)
+        {
+            scenario.Run = false;
+            try
+            {
+
                 using (var streamWriter =
-                    new StreamWriter(scenario.ResultPath))
+                    new StreamWriter($"{scenario.Directory}\\{scenario.FileName}"))
                 {
-                    WriteHeaderCsv(streamWriter);
-                    foreach (var httpResponseMessage in scenario.Results)
-                        streamWriter.WriteLine(httpResponseMessage.GetCsvLine());
+                    var contentJsonUnPrettyfied =
+                        JsonConvert.SerializeObject(scenario.ToScenario(), Formatting.Indented);
+                    streamWriter.WriteLine(contentJsonUnPrettyfied);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private static void WriteEachClientResultJson(ScenarioInput scenario)
+        {
+            foreach (var scenarioResult in scenario.Bateries)
+            {
+                if (!Directory.Exists($"{scenario.Directory}\\{scenarioResult.Count}"))
+                    Directory.CreateDirectory($"{scenario.Directory}\\{scenarioResult.Count}");
+
+                foreach (var scenarioResultClientResult in scenarioResult.ClientResults)
+                {
+                    using (var streamWriter =
+                        new StreamWriter(scenario.ResultPath(scenarioResult.Count, scenarioResultClientResult.Count)))
+                    {
+                        var contentJsonUnPrettyfied =
+                            JsonConvert.SerializeObject(scenarioResultClientResult.Result, Formatting.Indented);
+                        streamWriter.WriteLine(contentJsonUnPrettyfied);
+                    }
                 }
             }
         }
 
-        private static void WriteJson(Scenario scenario)
+        private static void WriteCompiledResultJson(ScenarioInput scenario)
         {
-            lock (scenario)
+            var baterias = scenario.Bateries.SelectMany(x => x.ClientResults).GroupBy(x => x.Count).ToList();
+            foreach (var bateriaGrouped in baterias)
             {
-                if (File.Exists(scenario.ResultPath)) 
-                    return;
-                
-                using (var streamWriter =
-                    new StreamWriter(scenario.ResultPath))
+                var results = bateriaGrouped.Select(y => new MetricStatusCompiled
                 {
-                    var contentJsonUnPrettyfied = JsonConvert.SerializeObject(scenario.Results, Formatting.Indented);
+                    ClientToModuleTotalTime = y.Result.Select(x => (double) x.ClientToModule.TotalTime).GetMedian(),
+                    ClientToModulePercentualError = y.Result
+                        .Select(x => ((double) x.ClientToModule.Error) / ((double) x.ClientToModule.Success)).GetMedian(),
+                    ResilienceModuleToExternalTotalSuccessTime = y.Result
+                        .Select(x => (double) x.ResilienceModuleToExternalService.TotalSuccessTime).GetMedian(),
+                    ResilienceModuleToExternalTotalErrorTime = y.Result
+                        .Select(x => (double) x.ResilienceModuleToExternalService.TotalErrorTime).GetMedian(),
+                    ResilienceModuleToExternalTotalTime =
+                        y.Result.Select(x => (double) x.ResilienceModuleToExternalService.Total).GetMedian(),
+                    ResilienceModuleToExternalAverageTimePerRequest = y.Result
+                        .Select(x => x.ResilienceModuleToExternalService.AverageSuccessTimePerRequest).GetMedian(),
+                }).ToList();
+
+                using (var streamWriter =
+                    new StreamWriter(scenario.ResultCompiledPath(bateriaGrouped.Key)))
+                {
+                    var contentJsonUnPrettyfied = JsonConvert.SerializeObject(results, Formatting.Indented);
                     streamWriter.WriteLine(contentJsonUnPrettyfied);
                 }
             }

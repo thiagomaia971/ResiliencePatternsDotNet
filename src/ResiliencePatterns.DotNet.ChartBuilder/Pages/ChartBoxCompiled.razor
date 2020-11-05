@@ -1,0 +1,129 @@
+﻿@page "/chart-box-plot/compiled"
+@using Syncfusion.Blazor.Charts
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.DropDowns
+@using C1.Chart
+@using Newtonsoft.Json
+@using ResiliencePatternsDotNet.Commons
+@using BlazorInputFile
+@using System.IO
+@inject NavigationManager NavigationManager
+
+<div class="row">
+    <InputFile OnChange="HandleFileSelected" Multiple />
+</div>
+<div class="row">
+    <div class="col-lg-12 control-section">
+        <SfChart @ref="@ChartObj" Title="Médias das requisições">
+            <ChartEvents Load="ChartLoad" />
+            <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+            <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
+                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+            </ChartPrimaryXAxis>
+            @*<ChartPrimaryYAxis Title="Age">
+                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+            </ChartPrimaryYAxis>*@
+            <ChartSeriesCollection>
+                <ChartSeries DataSource="@AverageClientModuleChart" XName="x" YName="y" Name="Média Client -> Módulo" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
+                    <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
+                </ChartSeries>
+                <ChartSeries DataSource="@AverageModuleServiceChart" XName="x" YName="y" Name="Média Módulo -> Serviço" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
+                    <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
+                </ChartSeries>
+            </ChartSeriesCollection>
+            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+        </SfChart>
+    </div>
+</div>
+@code{
+    SfChart ChartObj;
+    public bool Mean = true;
+    BoxPlotMode BoxPlot = BoxPlotMode.Normal;
+    public void ChangeMode(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    {
+        this.BoxPlot = (BoxPlotMode)Enum.Parse(typeof(BoxPlotMode), args.Value.ToString(), true);
+    }
+    private void IsChecked(Syncfusion.Blazor.Buttons.ChangeEventArgs<bool> args)
+    {
+        Mean = args.Checked;
+        ChartObj.Refresh();
+    }
+    public class Data
+    {
+        public string ID { get; set; }
+    }
+    private List<Data>
+    DropDowmData = new List<Data>()
+        {
+            new Data(){ ID= "Normal"},
+            new Data(){ ID= "Exclusive"},
+            new Data(){ ID= "Inclusive"}
+                    };
+    private void ChangeType(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string> args)
+    {
+        this.BoxPlot = (BoxPlotMode)Enum.Parse(typeof(BoxPlotMode), args.Value.ToString(), true);
+        StateHasChanged();
+    }
+    public class BoxandWhiskerData
+    {
+        public string x { get; set; }
+        public double[] y { get; set; }
+    }
+    public List<BoxandWhiskerData> AverageClientModuleChart = new List<BoxandWhiskerData>();
+    public List<BoxandWhiskerData> AverageModuleServiceChart = new List<BoxandWhiskerData>();
+
+    string CurrentUri;
+
+    async Task HandleFileSelected(IFileListEntry[] files)
+    {
+        var charts = new List<ScenarioChartCompiled>();
+        foreach (var arquivo in files)
+        {
+            using (var streamReader = new StreamReader(arquivo.Data))
+            {
+                charts.Add(new ScenarioChartCompiled
+                {
+                    ScenarioFileName = arquivo.Name,
+                    ScenarioResults = JsonConvert.DeserializeObject<MetricStatusCompiled[]>(await streamReader.ReadToEndAsync()).ToList()
+                });
+            }
+        }
+        AverageClientModuleChart = charts.Select(x => new BoxandWhiskerData
+        {
+            x = x.ScenarioFileName,
+            y = x.ScenarioResults.Where(z => z != null).Select(y => y.ClientToModuleTotalTime).ToArray()
+        }).ToList();
+        AverageModuleServiceChart = charts.Select(x => new BoxandWhiskerData
+        {
+            x = x.ScenarioFileName,
+            y = x.ScenarioResults.Where(z => z != null).Select(y => y.ResilienceModuleToExternalTotalSuccessTime).ToArray()
+        }).ToList();
+        StateHasChanged();
+    }
+
+    void ChartLoad(ILoadedEventArgs Args)
+    {
+        CurrentUri = NavigationManager.Uri;
+        if (CurrentUri.IndexOf("material") > -1)
+        {
+            Args.Theme = ChartTheme.Material;
+        }
+        else if (CurrentUri.IndexOf("fabric") > -1)
+        {
+            Args.Theme = ChartTheme.Fabric;
+        }
+        else if (CurrentUri.IndexOf("bootstrap") > -1)
+        {
+            Args.Theme = ChartTheme.Bootstrap;
+        }
+        else if (CurrentUri.IndexOf("highcontrast") > -1)
+        {
+            Args.Theme = ChartTheme.HighContrast;
+        }
+        else
+        {
+            Args.Theme = ChartTheme.Bootstrap4;
+        }
+    }
+}

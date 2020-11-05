@@ -18,6 +18,9 @@ namespace ResiliencePatterns.DotNet.Domain.Configurations
         [XmlAttribute("sleep-duration")]
         public int SleepDuration { get; set; }
 
+        [XmlAttribute("exponential-backoff-pow")]
+        public float ExponentialBackoffPow { get; set; }
+
         public object Create(object parent, object configContext, XmlNode section)
         {
             var ser = new XmlSerializer(typeof(RetryConfiguration));
