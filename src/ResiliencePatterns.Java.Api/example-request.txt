@@ -1,0 +1,27 @@
+{
+    "urlConfiguration": {
+        "baseUrl": "http://localhost:8080",
+        "action": "/",
+        "method": "GET"
+    },
+    "requestConfiguration": {
+        "successRequests": 5,
+        "maxRequests": 50,
+        "timeout": 15
+    },
+    "runPolicy": "RETRY",
+    "retryConfiguration": {
+      "count": 1,
+      "sleepDuration": 500,
+      "sleepDurationType": "FIXED"
+    },
+    "circuitBreakerConfiguration": {
+        "failureThreshold": 50.0,
+        "slidingWindowSize": 100,
+        "minimumNumberOfCalls": 100,
+        "durationOfBreaking": 60000,
+        "permittedNumberOfCallsInHalfOpenState": 10,
+        "slowCallRateThreshold": 100,
+        "slowCallDurationThreshold": 60000
+    }
+}
