@@ -113,7 +113,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
             catch (Exception e)
             {
-                Console.WriteLine("Result: Unexpected Error");
                 _metrics.IncrementeResilienceModuleError();
                 throw;
             }

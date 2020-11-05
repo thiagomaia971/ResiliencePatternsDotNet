@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
@@ -44,11 +45,10 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     retryCount: _configurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
                         TimeSpan.FromMilliseconds(_configurationSection.RetryConfiguration.SleepDuration),
-                    onRetry: (exception, timeout) =>
+                    onRetry: (exception, timeout, context) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
                         _metricService.RetryMetric.IncrementRetryTotalTimeout((long) timeout.TotalMilliseconds);
-                        Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
 
@@ -58,12 +58,11 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                 .WaitAndRetry(
                     retryCount: _configurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
-                        TimeSpan.FromMilliseconds(Math.Pow(2, i) * _configurationSection.RetryConfiguration.SleepDuration),
-                    onRetry: (exception, timeout) =>
+                        TimeSpan.FromMilliseconds(Math.Pow(_configurationSection.RetryConfiguration.ExponentialBackoffPow, i) * _configurationSection.RetryConfiguration.SleepDuration),
+                    onRetry: (exception, timeout, context) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
                         _metricService.RetryMetric.IncrementRetryTotalTimeout((long) timeout.TotalMilliseconds);
-                        Console.WriteLine($"\t{exception}");
                         Console.WriteLine($"\tNew timeout of [{timeout}]");
                     });
 

@@ -59,8 +59,8 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                     if (scenario.AsyncClients)
                     {
                         var tasks = new List<Task<MetricStatus>>();
-                        for (var i = 0; i < subScenario; i++)
-                            tasks.Add(MakeRequestAsync(scenario));
+                        for (var i = 1; i <= subScenario; i++)
+                            tasks.Add(MakeRequestAsync(scenario, i, subScenario));
 
                         var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
                         foreach (var result in results)
@@ -68,8 +68,8 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                     }
                     else
                     {
-                        for (var i = 0; i < subScenario; i++)
-                            scenario.AddResult(count, subScenario, MakeRequest(scenario));
+                        for (var i = 1; i <= subScenario; i++)
+                            scenario.AddResult(count, subScenario, MakeRequest(scenario, i, subScenario));
                     }
                 }
             }
@@ -77,7 +77,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             _resultWriterService.Write(scenario);
         }
 
-        private void ConfigProxy(ScenarioInput scenario)
+        private static void ConfigProxy(ScenarioInput scenario)
         {
             Console.WriteLine($"Config Proxy to {scenario.ProxyConfiguration.Behavior}");
             
@@ -110,7 +110,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             Thread.Sleep(10000);
         }
 
-        private async Task<MetricStatus> MakeRequestAsync(ScenarioInput scenario)
+        private static async Task<MetricStatus> MakeRequestAsync(ScenarioInput scenario, int subScenarioStep, int subScenario)
         {
             using (var httpClient = new HttpClient())
             {
@@ -131,7 +131,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                             Console.ForegroundColor = ConsoleColor.Green;
                         else
                             Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                        Console.WriteLine($"[{subScenarioStep.ToString().PadLeft(3)}/{subScenario.ToString().PadLeft(3)}]: {httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
                         Console.ForegroundColor = ConsoleColor.White;
                         
                         return  JsonConvert.DeserializeObject<MetricStatus>(httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult());
@@ -140,7 +140,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private MetricStatus MakeRequest(ScenarioInput scenario) 
-            => MakeRequestAsync(scenario).GetAwaiter().GetResult();
+        private MetricStatus MakeRequest(ScenarioInput scenario, int subScenarioStep, int subScenario) 
+            => MakeRequestAsync(scenario, subScenarioStep, subScenario).GetAwaiter().GetResult();
     }
 }

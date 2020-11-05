@@ -31,7 +31,8 @@
 		"RetryConfiguration": {
 			"Count": 5,
 			"SleepDuration": 500,
-			"SleepDurationType": "EXPONENTIAL_BACKOFF"
+			"SleepDurationType": "EXPONENTIAL_BACKOFF",
+			"ExponentialBackoffPow": 1.5
 		},
 		"CircuitBreakerConfiguration": {
 			"IsSimpleConfiguration": true,
