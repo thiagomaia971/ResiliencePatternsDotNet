@@ -5,6 +5,7 @@ public class RequestConfiguration {
 	private Integer successRequests;
 	private Integer maxRequests;
 	private Integer timeout;
+	
 	public Integer getSuccessRequests() {
 		return successRequests;
 	}
@@ -23,6 +24,5 @@ public class RequestConfiguration {
 	public void setTimeout(Integer timeout) {
 		this.timeout = timeout;
 	}
-	
 
 }

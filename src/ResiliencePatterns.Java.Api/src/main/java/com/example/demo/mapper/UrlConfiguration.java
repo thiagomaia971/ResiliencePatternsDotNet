@@ -5,6 +5,7 @@ public class UrlConfiguration {
 	private String baseUrl;
 	private String action;
 	private String method;
+	
 	public String getBaseUrl() {
 		return baseUrl;
 	}

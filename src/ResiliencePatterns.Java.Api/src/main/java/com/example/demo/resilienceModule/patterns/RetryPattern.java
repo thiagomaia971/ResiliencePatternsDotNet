@@ -38,7 +38,6 @@ public class RetryPattern implements Pattern {
 			return false;
 		}).get()) {
 			//entra no começo
-			System.out.println("foi");
 			time = System.currentTimeMillis() - time;
 			result.getResilienceModuleToExternalService().setTotalSuccessTime(
 					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
@@ -51,7 +50,9 @@ public class RetryPattern implements Pattern {
 
 	public void createAndConfigRetry(RetryConfiguration params, Result result) {
 		RetryConfig config;
-
+		
+		params.setCount(params.getCount() + 1);
+		
 		if(params.getSleepDurationType().equalsIgnoreCase("EXPONENTIAL_BACKOFF")) {
 			config = RetryConfig.custom()
 					.maxAttempts(params.getCount())
@@ -82,7 +83,6 @@ public class RetryPattern implements Pattern {
 			//result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		}).onRetry(event -> {
-			System.out.println("falhou, vai retentar");
 			time = System.currentTimeMillis();
 			
 			result.getRetryMetrics().setRetryCount(result.getRetryMetrics().getRetryCount() + 1);
