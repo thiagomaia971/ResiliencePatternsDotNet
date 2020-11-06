@@ -6,22 +6,22 @@ volumes:
 
 services:
   httpbin:
-    build: 
+    build:
       context: ./src/ResiliencePatterns.Core.Httpbin/
     ports:
       - 9000:80
 
   vaurien:
-    build: 
+    build:
       context: ./src/ResiliencePatterns.Core.Vaurien/
     volumes:
       - ./src/ResiliencePatterns.Core.Vaurien/assets/etc/:/etc/
     ports:
       - 9001:80
-    depends_on: 
+    depends_on:
       - httpbin
 
-  ResiliencePatternsApi:
+  ResiliencePatternsDotNetApi:
     image: ${DOCKER_REGISTRY-}resiliencepatternsdotnetapi
     build:
       context: .
@@ -29,5 +29,16 @@ services:
     ports:
       - 5001:80
     depends_on: 
+      - vaurien
+      - httpbin
+
+  ResiliencePatternsJavaApi:
+    image: ${DOCKER_REGISTRY-}resiliencepatternsjavaapi
+    build:
+      context: ./src/ResiliencePatterns.Java.Api/
+      dockerfile: Dockerfile
+    ports:
+      - 5002:5002
+    depends_on:
       - vaurien
       - httpbin

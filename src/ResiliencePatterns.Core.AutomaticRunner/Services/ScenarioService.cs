@@ -36,45 +36,46 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
         private void ProcessScenario(ScenarioInput scenario)
         {
-            Console.WriteLine();
             Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
             Console.WriteLine(JsonConvert.SerializeObject(scenario));
             ConfigProxy(scenario);
 
-            for (var count = 1; count <= scenario.Count; count++)
+            for (var currentSystemLanguage = 0; currentSystemLanguage < scenario.UrlFetch.BaseUrl.Length; currentSystemLanguage++)
             {
-                Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
-                Console.WriteLine($"    Bateria de Teste: {count}/{scenario.Count}");
-
-                foreach (var subScenario in scenario.Clients)
+                scenario.CurrentSystem = currentSystemLanguage;
+                
+                for (var count = 1; count <= scenario.Count; count++)
                 {
-                    Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
-                    Console.WriteLine($"    Bateria de Teste: {count}/{scenario.Count}");
-                    Console.WriteLine($"        SubScenario: {subScenario}");
-                    Console.WriteLine("         Start sending");
-                    
-                    if (File.Exists(scenario.ResultPath(count, subScenario)))
-                        File.Delete(scenario.ResultPath(count, subScenario));
-                    
-                    if (scenario.AsyncClients)
+                    foreach (var subScenario in scenario.Clients)
                     {
-                        var tasks = new List<Task<MetricStatus>>();
-                        for (var i = 1; i <= subScenario; i++)
-                            tasks.Add(MakeRequestAsync(scenario, i, subScenario));
+                        Console.WriteLine($"Scenario: {scenario.Directory}\\{scenario.FileName}");
+                        Console.WriteLine($"System Language: {scenario.CurrentSystemName}");
+                        Console.WriteLine($"    Bateria de Teste: {count}/{scenario.Count}");
+                        Console.WriteLine($"        SubScenario: {subScenario}");
+                        Console.WriteLine("         Start sending");
+                        
+                        if (File.Exists(scenario.ResultPath(count, subScenario)))
+                            File.Delete(scenario.ResultPath(count, subScenario));
+                        
+                        if (scenario.AsyncClients)
+                        {
+                            var tasks = new List<Task<MetricStatus>>();
+                            for (var i = 1; i <= subScenario; i++)
+                                tasks.Add(MakeRequestAsync(scenario, i, subScenario));
 
-                        var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
-                        foreach (var result in results)
-                            scenario.AddResult(count, subScenario, result);
-                    }
-                    else
-                    {
-                        for (var i = 1; i <= subScenario; i++)
-                            scenario.AddResult(count, subScenario, MakeRequest(scenario, i, subScenario));
+                            var results = Task.WhenAll(tasks).GetAwaiter().GetResult();
+                            foreach (var result in results)
+                                scenario.AddResult(count, subScenario, result);
+                        }
+                        else
+                        {
+                            for (var i = 1; i <= subScenario; i++)
+                                scenario.AddResult(count, subScenario, MakeRequest(scenario, i, subScenario));
+                        }
                     }
                 }
+                _resultWriterService.Write(scenario);
             }
-                
-            _resultWriterService.Write(scenario);
         }
 
         private static void ConfigProxy(ScenarioInput scenario)
@@ -114,7 +115,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
         {
             using (var httpClient = new HttpClient())
             {
-                httpClient.BaseAddress = new Uri(scenario.UrlFetch.BaseUrl);
+                httpClient.BaseAddress = new Uri(scenario.CurrentSystemLanguage);
                 var methodEnum = new HttpMethod(scenario.UrlFetch.Method);
                 httpClient.Timeout = TimeSpan.FromHours(10d);
 

@@ -18,6 +18,7 @@ public class Normal implements Pattern {
 		try {
 			long time = System.currentTimeMillis();
 			connector.makeRequest();
+			time = System.currentTimeMillis() - time;
 			result.getResilienceModuleToExternalService().setTotalSuccessTime(
 					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
 			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);

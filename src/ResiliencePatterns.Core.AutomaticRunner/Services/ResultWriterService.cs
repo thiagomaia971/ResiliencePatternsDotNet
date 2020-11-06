@@ -67,34 +67,16 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private static void WriteScenario(ScenarioInput scenario)
-        {
-            scenario.Run = false;
-            try
-            {
-
-                using (var streamWriter =
-                    new StreamWriter($"{scenario.Directory}\\{scenario.FileName}"))
-                {
-                    var contentJsonUnPrettyfied =
-                        JsonConvert.SerializeObject(scenario.ToScenario(), Formatting.Indented);
-                    streamWriter.WriteLine(contentJsonUnPrettyfied);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
-
         private static void WriteEachClientResultJson(ScenarioInput scenario)
         {
             foreach (var scenarioResult in scenario.Bateries)
             {
-                if (!Directory.Exists($"{scenario.Directory}\\{scenarioResult.Count}"))
-                    Directory.CreateDirectory($"{scenario.Directory}\\{scenarioResult.Count}");
+                if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}"))
+                    Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}");
 
+                if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}\\{scenarioResult.Count}"))
+                    Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}\\{scenarioResult.Count}");
+                
                 foreach (var scenarioResultClientResult in scenarioResult.ClientResults)
                 {
                     using (var streamWriter =
@@ -128,12 +110,36 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                         .Select(x => x.ResilienceModuleToExternalService.AverageSuccessTimePerRequest).GetMedian(),
                 }).ToList();
 
+                if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}"))
+                    Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}");
+                
                 using (var streamWriter =
                     new StreamWriter(scenario.ResultCompiledPath(bateriaGrouped.Key)))
                 {
                     var contentJsonUnPrettyfied = JsonConvert.SerializeObject(results, Formatting.Indented);
                     streamWriter.WriteLine(contentJsonUnPrettyfied);
                 }
+            }
+        }
+
+        private static void WriteScenario(ScenarioInput scenario)
+        {
+            scenario.Run = false;
+            try
+            {
+
+                using (var streamWriter =
+                    new StreamWriter($"{scenario.Directory}\\{scenario.FileName}"))
+                {
+                    var contentJsonUnPrettyfied =
+                        JsonConvert.SerializeObject(scenario.ToScenario(), Formatting.Indented);
+                    streamWriter.WriteLine(contentJsonUnPrettyfied);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 

@@ -22,7 +22,7 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
         public string Directory { get; set; }
         public string FileName { get; set; }
         public string FileNameWithoutExtension { get; set; }
-        // public int SubScenario { get; set; }
+        public int CurrentSystem { get; set; }
 
         public bool Run { get; set; }
         public int Count { get; set; }
@@ -32,8 +32,10 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
         public ResultType ResultType { get; set; }
         public object Parameters { get; set; }
 
-        public string ResultPath(int bateria, int subScenario) => $"{Directory}\\{bateria}\\[{subScenario}]{FileNameWithoutExtension}-result.{ResultType.ToString().ToLower()}";
-        public string ResultCompiledPath(int subScenario) => $"{Directory}\\[{subScenario}]{FileNameWithoutExtension}-result-compiled.{ResultType.ToString().ToLower()}";
+        public string ResultPath(int bateria, int subScenario) => $"{Directory}\\{CurrentSystemName}\\{bateria}\\[{subScenario}]{FileNameWithoutExtension}-result.{ResultType.ToString().ToLower()}";
+        public string ResultCompiledPath(int subScenario) => $"{Directory}\\{CurrentSystemName}\\[{subScenario}]{FileNameWithoutExtension}-result-compiled.{ResultType.ToString().ToLower()}";
+        public string CurrentSystemLanguage => UrlFetch.BaseUrl[CurrentSystem];
+        public string CurrentSystemName => UrlFetch.BaseUrlName[CurrentSystem];
         public List<BateriaResult> Bateries { get; set; }
         public bool AsyncClients { get; set; }
 

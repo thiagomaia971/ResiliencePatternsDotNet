@@ -24,7 +24,7 @@ public class ClienteController {
 	
 	private RetryPattern retry;
 	
-	@PostMapping("/")
+	@PostMapping("/execute")
 	public ResponseEntity<?> normalRequests(@RequestBody(required = false) Options options) {
 		Result result = new Result();
 		

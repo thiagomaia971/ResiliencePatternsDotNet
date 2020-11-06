@@ -9,7 +9,10 @@ namespace ResiliencePatternsDotNet.Commons.Configurations
     public class UrlFetchConfigurationSection : IConfigurationSectionHandler
     {
         [XmlAttribute("base-url")]
-        public string BaseUrl { get; set; }
+        public string[] BaseUrl { get; set; }
+        
+        [XmlAttribute("base-url-name")]
+        public string[] BaseUrlName { get; set; }
         
         [XmlAttribute("action-url")]
         public string ActionUrl { get; set; }
