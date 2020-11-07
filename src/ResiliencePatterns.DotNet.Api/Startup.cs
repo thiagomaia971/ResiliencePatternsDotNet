@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Reflection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -26,21 +27,23 @@ namespace ResiliencePatterns.DotNet.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
-            services.AddMetrics();
-
-            services.AddTransient<IExecuteService, ExecuteService>();
+            // services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
+            // services.AddMetrics();
+            // var httpClient = new HttpClient();
+            // services.AddSingleton(httpClient);
+            services.AddHttpClient();
+            services.AddScoped<IExecuteService, ExecuteService>();
             services.AddScoped<MetricService>();
-            services.AddScoped<MetricsRegistry>();
-            
+            // services.AddScoped<MetricsRegistry>();
+
             services.AddControllers()
                 .AddNewtonsoftJson(opt =>
                 {
                     opt.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                    opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                    // opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
             
-            services.AddMediatR(typeof(SampleCommand).GetTypeInfo().Assembly);
+            // services.AddMediatR(typeof(SampleCommand).GetTypeInfo().Assembly);
             
             services.AddCors(e => e.AddPolicy("default",
                 c => c.AllowAnyOrigin()

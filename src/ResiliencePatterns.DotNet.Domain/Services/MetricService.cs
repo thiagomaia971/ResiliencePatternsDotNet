@@ -9,16 +9,15 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 {
     public class MetricService
     {
-        private readonly MetricsRegistry _metricsRegistry;
-        private readonly IMetrics _metrics;
+        // private readonly MetricsRegistry _metricsRegistry;
+        // private readonly IMetrics _metrics;
         private Stopwatch _stopwatch;
         private readonly MetricStatus _metricStatus;
 
-        public MetricService(IMetrics metrics, MetricsRegistry metricsRegistry)
+        public MetricService(/*IMetrics metrics, MetricsRegistry metricsRegistry*/)
         {
-            Console.WriteLine("Instanciou MetricService");
-            _metrics = metrics;
-            _metricsRegistry = metricsRegistry;
+            // _metrics = metrics;
+            // _metricsRegistry = metricsRegistry;
             _metricStatus = MetricStatus.Create();
         }
 
@@ -42,25 +41,25 @@ namespace ResiliencePatterns.DotNet.Domain.Services
         public void IncrementClientSuccess()
         {
             _metricStatus.ClientToModule.IncrementeSuccess();
-            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientSuccess);
+            // _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientSuccess);
         }
 
         public void IncrementClientError()
         {
             _metricStatus.ClientToModule.IncrementeError();
-            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientError);
+            // _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementClientError);
         }
 
         public void IncrementeResilienceModuleError()
         {
             _metricStatus.ResilienceModuleToExternalService.IncrementeError();
-            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleError);
+            // _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleError);
         }
 
         public void IncrementeResilienceModuleSuccess()
         {
             _metricStatus.ResilienceModuleToExternalService.IncrementeSuccess();
-            _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleSucess);
+            // _metrics.Measure.Counter.Increment(_metricsRegistry.IncrementeResilienceModuleSucess);
         }
 
         public void IncrementeResilienceModuleSuccessTime(long milliseconds) 

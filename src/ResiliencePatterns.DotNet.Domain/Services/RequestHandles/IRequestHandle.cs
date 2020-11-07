@@ -6,6 +6,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 {
     public interface IRequestHandle
     {
-        Task<HttpResponseMessage> HandleRequest(UrlConfigurationSection urlConfiguration);
+        HttpResponseMessage HandleRequest(UrlConfigurationSection urlConfiguration);
     }
 }

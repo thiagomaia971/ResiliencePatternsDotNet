@@ -16,20 +16,23 @@ namespace ResiliencePatterns.DotNet.Domain.Services
     public class ExecuteService : IExecuteService
     {
         private readonly MetricService _metrics;
+        private readonly IHttpClientFactory _httpClient;
         private IResiliencePatterns ResiliencePatterns { get; set; }
         private IRequestHandle RequestHandle { get; set; }
 
-        public ExecuteService(MetricService metricService) 
-            => _metrics = metricService;
-
-        public Task<MetricStatus> Execute(ConfigurationSection configurationSection)
+        public ExecuteService(MetricService metricService, IHttpClientFactory httpClient)
         {
-            Console.WriteLine($"EnvironmentValue: {GlobalVariables.EnvironmentValue}");
-            Console.WriteLine($"Teste:     {configurationSection.ToJson()}");
-            Console.WriteLine();
+            _metrics = metricService;
+            _httpClient = httpClient;
+        }
+
+        public MetricStatus Execute(ConfigurationSection configurationSection)
+        {
+            // Console.WriteLine($"Teste:     {configurationSection.ToJson()}");
+            // Console.WriteLine();
             
             ResiliencePatterns = new Resiliences.ResiliencePatterns(configurationSection, _metrics);
-            RequestHandle = new RequestHandle(ResiliencePatterns, configurationSection, _metrics);
+            RequestHandle = new RequestHandle(ResiliencePatterns, configurationSection, _metrics, _httpClient);
             // InitializePrometheusServer(configurationSection);
 
             return ProcessRequests(configurationSection);
@@ -49,32 +52,30 @@ namespace ResiliencePatterns.DotNet.Domain.Services
                 .Start();
         }
 
-        private async Task<MetricStatus> ProcessRequests(ConfigurationSection configurationSection)
+        private MetricStatus ProcessRequests(ConfigurationSection configurationSection)
         {
             while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests && 
                    _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests)
             {
-                Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
+                // Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
                 var watch = new Stopwatch();
                 watch.Start();
                 
-                await ProcessRequest(configurationSection);
+                ProcessRequest(configurationSection);
                 
                 watch.Stop();
                 _metrics.IncrementClientTotalTime(watch.ElapsedMilliseconds);
                 
-                Thread.Sleep(configurationSection.RequestConfiguration.Delay);
+                // Thread.Sleep(configurationSection.RequestConfiguration.Delay);
                 
-                Console.WriteLine(" -------- ");
-                Console.WriteLine();
+                // Console.WriteLine(" -------- ");
+                // Console.WriteLine();
             }
 
-            _metrics.ResetAll();
-            
             return _metrics.MetricStatus;
         }
 
-        private Task<HttpResponseMessage> ProcessRequest(ConfigurationSection configurationSection) 
+        private HttpResponseMessage ProcessRequest(ConfigurationSection configurationSection) 
             => RequestHandle.HandleRequest(configurationSection.UrlConfiguration);
     }
 }

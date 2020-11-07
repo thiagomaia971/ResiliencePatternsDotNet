@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ResiliencePatterns.DotNet.Domain.Commands;
+using ResiliencePatterns.DotNet.Domain.Services;
+using ResiliencePatternsDotNet.Commons;
 
 namespace ResiliencePatterns.DotNet.Api.Controllers
 {
@@ -8,8 +10,15 @@ namespace ResiliencePatterns.DotNet.Api.Controllers
     [Route("[controller]")]
     public class ExecuteController : BaseController
     {
+        private readonly IExecuteService _executeService;
+
+        public ExecuteController(IExecuteService executeService)
+        {
+            _executeService = executeService;
+        }
+        
         [HttpPost]
-        public async Task<IActionResult> Execute(ExecuteCommand executeCommand) 
-            => HandleResult(Mediator.Send(executeCommand).GetAwaiter().GetResult());
+        public MetricStatus Execute(ExecuteCommand executeCommand)
+            => _executeService.Execute(executeCommand);
     }
 }

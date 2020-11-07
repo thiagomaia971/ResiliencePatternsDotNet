@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using ResiliencePatterns.DotNet.Domain.Configurations;
 using ResiliencePatterns.DotNet.Domain.Entities.Enums;
@@ -14,13 +19,15 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
         private readonly IResiliencePatterns _resiliencePatterns;
         private readonly ConfigurationSection _configurationSection;
         private readonly MetricService _metrics;
+        private readonly IHttpClientFactory _httpClient;
 
         public RequestHandle(IResiliencePatterns resiliencePatterns, ConfigurationSection configurationSection,
-            MetricService metrics)
+            MetricService metrics, IHttpClientFactory httpClient)
         {
             _resiliencePatterns = resiliencePatterns;
             _configurationSection = configurationSection;
             _metrics = metrics;
+            _httpClient = httpClient;
             CreateCustomMetric();
         }
 
@@ -43,35 +50,35 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
         }
 
-        public async Task<HttpResponseMessage> HandleRequest(UrlConfigurationSection urlConfiguration)
+        public HttpResponseMessage HandleRequest(UrlConfigurationSection urlConfiguration)
         {
             switch (_configurationSection.RunPolicy)
             {
                 case RunPolicyEnum.RETRY:
-                    return await HandleClientResult(_resiliencePatterns.RetryPolicy
+                    return HandleClientResult(_resiliencePatterns.RetryPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
                         .Result);
                 case RunPolicyEnum.CIRCUIT_BREAKER:
-                    return await HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
+                    return HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
                         .Result);
                 case RunPolicyEnum.ALL:
-                    return await HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
+                    return HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
                             _resiliencePatterns.CircuitBreakerPolicy.Execute(() => MakeRequest(urlConfiguration)))
                         .Result);
                 case RunPolicyEnum.NONE:
                     try
                     {
-                        return await HandleClientResult(MakeRequest(urlConfiguration));
+                        return HandleClientResult(MakeRequest(urlConfiguration));
                     }
                     catch (RequestException e)
                     {
-                        return await HandleClientResult(e.HttpResponseMessage);
+                        return HandleClientResult(e.HttpResponseMessage);
 
                     }
                     catch (Exception e)
                     {
-                        return await HandleClientResult(null);
+                        return HandleClientResult(null);
                     }
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -82,19 +89,34 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
         {
             try
             {
-                using (var httpClient = new HttpClient())
-                {
-                    var stopWatch = new Stopwatch();
-                    stopWatch.Start();
-                    
-                    httpClient.BaseAddress = new Uri(_configurationSection.UrlConfiguration.BaseUrl);
-                    httpClient.Timeout =
-                        TimeSpan.FromMilliseconds(_configurationSection.RequestConfiguration.Timeout);
-                    var methodEnum = new HttpMethod(urlConfiguration.Method);
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
 
-                    var result = httpClient.SendAsync(new HttpRequestMessage(methodEnum, urlConfiguration.Action)).GetAwaiter().GetResult();
-                    Console.WriteLine($"Result: {result.StatusCode}");
+                var server = _configurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault().Split(':').FirstOrDefault();
+                var port = int.Parse(_configurationSection.UrlConfiguration.BaseUrl.Split(':').LastOrDefault());
+                using (var tcpClient = new TcpClient())
+                {
+                    tcpClient.Connect(server, port);
+                    using NetworkStream networkStream = tcpClient.GetStream();
+                    networkStream.ReadTimeout = _configurationSection.RequestConfiguration.Timeout;
+                    using var writer = new StreamWriter(networkStream);
+                    var message = $@"{urlConfiguration.Method} / HTTP/1.1
+Host: {server}" + "\r\n\r\n";
+
+                    using var reader = new StreamReader(networkStream, Encoding.UTF8);
+                    byte[] bytes = Encoding.UTF8.GetBytes(message);
+                    networkStream.Write(bytes, 0, bytes.Length);
+                    var readToEnd = reader.ReadToEnd();
+                    //Console.WriteLine(readToEnd);
+                    var successCodes = new string[]
+                        {"HTTP/1.1 200", "HTTP/1.1 201", "HTTP/1.1 202", "HTTP/1.1 203", "HTTP/1.1 204"};
                     
+                    var result = new HttpResponseMessage
+                    {
+                        StatusCode =  successCodes.Any(x => readToEnd.Contains(x)) ? HttpStatusCode.OK : HttpStatusCode.BadRequest
+                    };
+                    Console.WriteLine($"Result: {result.StatusCode}");
+
                     stopWatch.Stop();
 
                     if (result.IsSuccessStatusCode)
@@ -103,7 +125,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                         _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
                     }else
                         _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
-                    
+                        
 
                     if (!result.IsSuccessStatusCode)
                         throw new RequestException(result);
@@ -113,12 +135,13 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 _metrics.IncrementeResilienceModuleError();
                 throw;
             }
         }
 
-        private async Task<HttpResponseMessage> HandleClientResult(HttpResponseMessage result)
+        private HttpResponseMessage HandleClientResult(HttpResponseMessage result)
         {
             if (result?.IsSuccessStatusCode ?? false)
                 _metrics.IncrementClientSuccess();

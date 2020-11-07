@@ -1,0 +1,57 @@
+{
+  "Run": false,
+  "Count": 10,
+  "Clients": [
+    25,
+    50,
+    100
+  ],
+  "UrlFetch": {
+    "BaseUrl": [
+      "http://localhost:5001",
+      "http://localhost:5002"
+    ],
+    "BaseUrlName": [
+      "DotNet",
+      "Java"
+    ],
+    "ActionUrl": "/execute",
+    "Method": "POST"
+  },
+  "ProxyConfiguration": {
+    "DockerComposePath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet",
+    "VaurienConfigPath": "D:/Wokspace/Universidade/ResiliencePatternsDotNet/src/ResiliencePatterns.Core.Vaurien/assets/etc/vaurien.ini",
+    "RestartVaurienContainerCommand": "docker-compose restart vaurien",
+    "Behavior": "0:blackout,0:delay,50:error,0:hang"
+  },
+  "ResultType": 2,
+  "Parameters": {
+    "UrlConfiguration": {
+      "BaseUrl": "http://vaurien:80",
+      "Action": "",
+      "Method": "GET"
+    },
+    "RequestConfiguration": {
+      "SuccessRequests": 50,
+      "MaxRequests": 1000,
+      "Delay": 0,
+      "Timeout": 3600000
+    },
+    "RunPolicy": "CIRCUIT_BREAKER",
+    "RetryConfiguration": {
+      "Count": 5,
+      "SleepDuration": 500,
+      "SleepDurationType": "EXPONENTIAL_BACKOFF",
+      "ExponentialBackoffPow": 1.5
+    },
+    "CircuitBreakerConfiguration": {
+      "IsSimpleConfiguration": true,
+      "DurationOfBreaking": 3000,
+      "ExceptionsAllowedBeforeBreaking": 5,
+      "FailureThreshold": 0.5,
+      "SamplingDuration": 5000,
+      "MinimumThroughput": 20
+    }
+  },
+  "AsyncClients": true
+}

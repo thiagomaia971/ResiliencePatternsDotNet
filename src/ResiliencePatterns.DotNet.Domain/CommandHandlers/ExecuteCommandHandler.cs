@@ -14,6 +14,6 @@ namespace ResiliencePatterns.DotNet.Domain.CommandHandlers
             => _executeService = executeService;
 
         public override Task<MetricStatus> Handle(ExecuteCommand command) 
-            => _executeService.Execute(command);
+            => Task.Run(() => _executeService.Execute(command));
     }
 }
