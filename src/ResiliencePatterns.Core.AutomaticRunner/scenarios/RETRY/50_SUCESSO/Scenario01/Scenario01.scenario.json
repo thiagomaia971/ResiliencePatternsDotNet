@@ -1,5 +1,5 @@
 {
-  "Run": false,
+  "Run": true,
   "Count": 10,
   "Clients": [
     25,
@@ -32,15 +32,15 @@
       "Method": "GET"
     },
     "RequestConfiguration": {
-      "SuccessRequests": 50,
+      "SuccessRequests": 25,
       "MaxRequests": 1000,
       "Delay": 0,
       "Timeout": 3600000
     },
     "RunPolicy": "RETRY",
     "RetryConfiguration": {
-      "Count": 3,
-      "SleepDuration": 500,
+      "Count": 5,
+      "SleepDuration": 50,
       "SleepDurationType": "EXPONENTIAL_BACKOFF",
       "ExponentialBackoffPow": 1.5
     },

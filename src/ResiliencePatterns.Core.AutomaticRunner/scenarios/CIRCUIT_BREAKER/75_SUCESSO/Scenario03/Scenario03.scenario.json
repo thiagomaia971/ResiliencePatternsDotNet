@@ -32,7 +32,7 @@
       "Method": "GET"
     },
     "RequestConfiguration": {
-      "SuccessRequests": 50,
+      "SuccessRequests": 25,
       "MaxRequests": 1000,
       "Delay": 0,
       "Timeout": 3600000
@@ -46,8 +46,8 @@
     },
     "CircuitBreakerConfiguration": {
       "IsSimpleConfiguration": true,
-      "DurationOfBreaking": 5000,
-      "ExceptionsAllowedBeforeBreaking": 5,
+      "DurationOfBreaking": 100,
+      "ExceptionsAllowedBeforeBreaking": 2,
       "FailureThreshold": 0.5,
       "SamplingDuration": 5000,
       "MinimumThroughput": 20

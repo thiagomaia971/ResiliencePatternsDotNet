@@ -1,5 +1,5 @@
 {
-  "Run": false,
+  "Run": true,
   "Count": 10,
   "Clients": [
     25,
@@ -37,16 +37,16 @@
       "Delay": 0,
       "Timeout": 3600000
     },
-    "RunPolicy": "CIRCUIT_BREAKER",
+    "RunPolicy": "RETRY",
     "RetryConfiguration": {
       "Count": 5,
-      "SleepDuration": 500,
+      "SleepDuration": 100,
       "SleepDurationType": "EXPONENTIAL_BACKOFF",
       "ExponentialBackoffPow": 1.5
     },
     "CircuitBreakerConfiguration": {
       "IsSimpleConfiguration": true,
-      "DurationOfBreaking": 50,
+      "DurationOfBreaking": 30000,
       "ExceptionsAllowedBeforeBreaking": 2,
       "FailureThreshold": 0.5,
       "SamplingDuration": 5000,

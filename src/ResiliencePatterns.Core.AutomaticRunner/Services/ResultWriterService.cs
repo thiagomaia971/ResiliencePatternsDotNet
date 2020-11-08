@@ -105,7 +105,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                     ResilienceModuleToExternalTotalErrorTime = y.Result
                         .Select(x => (double) x.ResilienceModuleToExternalService.TotalErrorTime).GetMedian(),
                     ResilienceModuleToExternalTotalTime =
-                        y.Result.Select(x => (double) x.ResilienceModuleToExternalService.Total).GetMedian(),
+                        y.Result.Select(x => (double) x.ResilienceModuleToExternalService.TotalSuccessTime + (double) x.ResilienceModuleToExternalService.TotalErrorTime).GetMedian(),
                     ResilienceModuleToExternalAverageTimePerRequest = y.Result
                         .Select(x => x.ResilienceModuleToExternalService.AverageSuccessTimePerRequest).GetMedian(),
                 }).ToList();
