@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ResiliencePatterns.DotNet.ChartBuilder.Data;
+using ResiliencePatterns.DotNet.ChartBuilder.Services;
 using Syncfusion.Blazor;
 
 namespace ResiliencePatterns.DotNet.ChartBuilder
@@ -27,6 +28,9 @@ namespace ResiliencePatterns.DotNet.ChartBuilder
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR(e => e.MaximumReceiveMessageSize = 102400000);
+            services.Configure<FormOptions>(options => { options.MultipartBodyLengthLimit = 536870912; });
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
@@ -58,6 +62,13 @@ namespace ResiliencePatterns.DotNet.ChartBuilder
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+            app.Use(async (context, next) =>
+            {
+                context.Features.Get<IHttpMaxRequestBodySizeFeature>()
+                    .MaxRequestBodySize = null; 
+                await next.Invoke();
+            });
+
         }
     }
 }
