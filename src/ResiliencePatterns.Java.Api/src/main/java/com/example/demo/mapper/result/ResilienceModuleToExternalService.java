@@ -14,7 +14,8 @@ public class ResilienceModuleToExternalService {
 		this.error = 0;
 		this.total = 0;
 		this.totalSuccessTime = 0L;
-		this.setAverageSuccessTimePerRequest(0F);
+		this.averageSuccessTimePerRequest = 0F;
+		this.totalErrorTime = 0L;
 	}
 	
 	public Integer getSuccess() {
