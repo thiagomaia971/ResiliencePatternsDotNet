@@ -23,6 +23,8 @@ public class RetryPattern implements Pattern {
 	private CheckedFunction0<Boolean> retryableSupplier;
 	
 	private long time;
+	
+	private long errorTime;
 
 	public RetryPattern(Options params, Result result) {
 		connector = new Connector(params.getUrlConfiguration(), params.getRequestConfiguration().getTimeout());
@@ -31,10 +33,12 @@ public class RetryPattern implements Pattern {
 
 	@Override
 	public boolean request(Result result, Options options) {
-		time = System.currentTimeMillis();
+		long time;
+		time = errorTime = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 		if(Try.of(retryableSupplier).recover(throwable -> {
 			//so se quebrar o maximo de vezes
+			
 			return false;
 		}).get()) {
 			//entra no começo
@@ -83,7 +87,14 @@ public class RetryPattern implements Pattern {
 			//result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		}).onRetry(event -> {
-			time = System.currentTimeMillis();
+			
+			errorTime = System.currentTimeMillis() - errorTime;
+			result.getResilienceModuleToExternalService().setTotalErrorTime( 
+					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
+					errorTime);
+			
+			//reinicia timestamps
+			time = errorTime = System.currentTimeMillis();
 			
 			result.getRetryMetrics().setRetryCount(result.getRetryMetrics().getRetryCount() + 1);
 			//System.out.println("falhou, vai retentar");
