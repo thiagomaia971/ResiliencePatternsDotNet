@@ -21,8 +21,14 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetByPath(IFileListEntry[] files, string system)
+        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetClientToModuleTotalTimeByPath(IFileListEntry[] files, string system) 
+            => await Get(files, system, y => y.ClientToModuleTotalTime);
+        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetResilienceModuleToExternalAverageTimePerRequestTimeByPath(IFileListEntry[] files, string system) 
+            => await Get(files, system, y => y.ResilienceModuleToExternalAverageTimePerRequest);
+
+        private async Task<Dictionary<string, List<BoxandWhiskerData>>> Get(IFileListEntry[] files, string system, Func<MetricStatusCompiled, double> selector)
         {
+            
             var results = files
                 .Where(x => x.Name.Contains("scenario-result-compiled") && x.RelativePath.Contains(system))
                 .Select(x => new FileList((FileListEntryImpl)x))
@@ -46,32 +52,13 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
                         var resultJson = await streamReader.ReadToEndAsync();
                         var result = JsonConvert
                             .DeserializeObject<MetricStatusCompiled[]>(resultJson).ToList();
-                        data.y = result.Where(z => z != null).Select(y => y.ClientToModuleTotalTime).ToArray();
+                        data.y = result.Where(z => z != null).Select(selector).ToArray();
                     }
                     _datas.Add(data);
                 }
                 datas.Add(scenario.Key, _datas);
             }
             return datas;
-            //foreach (var fileList in results)
-            //{
-            //    var data = new BoxandWhiskerData
-            //    {
-            //        x = fileList.ClientGroup.ToString()
-            //    };
-
-            //    var stream = files.First(xx => xx.RelativePath == fileList.RelativePath && xx.Name == fileList.Name).Data;
-            //    using (var streamReader = new StreamReader(stream))
-            //    {
-            //        var resultJson= await streamReader.ReadToEndAsync();
-            //        var result = JsonConvert
-            //            .DeserializeObject<MetricStatusCompiled[]>(resultJson).ToList();
-            //        data.y = result.Where(z => z != null).Select(y => y.ClientToModuleTotalTime).ToArray();
-            //    }
-            //    datas.Add(data);
-            //}
-
-            //return datas;
         }
 
         public async Task<string[]> GetByPath(string path)

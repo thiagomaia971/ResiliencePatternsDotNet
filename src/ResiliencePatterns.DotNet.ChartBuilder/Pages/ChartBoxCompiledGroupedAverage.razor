@@ -1,4 +1,4 @@
-﻿@page "/chart-box-plot/compiled/grouped"
+﻿@page "/chart-box-plot/compiled/grouped/average"
 @using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.Buttons
 @using Syncfusion.Blazor.DropDowns
@@ -21,7 +21,7 @@
 {
     <div class="row">
         <div class="col-lg-12 control-section">
-            <SfChart @ref="@ChartObj" Title="Tempo Total das Requisições">
+            <SfChart @ref="@ChartObj" Title="Tempo Médio das Requisições">
                 <ChartEvents Load="ChartLoad" />
                 <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
                 <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
@@ -81,7 +81,7 @@
         try
         {
             loading = true;
-            results = await ChartBoxValuesService.GetClientToModuleTotalTimeByPath(files, system);
+            results = await ChartBoxValuesService.GetResilienceModuleToExternalAverageTimePerRequestTimeByPath(files, system);
             StateHasChanged();
             loading = false;
         }
