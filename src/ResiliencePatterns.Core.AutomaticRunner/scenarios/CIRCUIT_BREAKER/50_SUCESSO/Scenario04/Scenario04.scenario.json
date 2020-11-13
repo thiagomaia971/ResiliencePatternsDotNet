@@ -37,16 +37,16 @@
       "Delay": 0,
       "Timeout": 3600000
     },
-    "RunPolicy": "RETRY",
+    "RunPolicy": "CIRCUIT_BREAKER",
     "RetryConfiguration": {
       "Count": 5,
-      "SleepDuration": 100,
+      "SleepDuration": 500,
       "SleepDurationType": "EXPONENTIAL_BACKOFF",
       "ExponentialBackoffPow": 1.5
     },
     "CircuitBreakerConfiguration": {
       "IsSimpleConfiguration": true,
-      "DurationOfBreaking": 30000,
+      "DurationOfBreaking": 300,
       "ExceptionsAllowedBeforeBreaking": 2,
       "FailureThreshold": 0.5,
       "SamplingDuration": 5000,
