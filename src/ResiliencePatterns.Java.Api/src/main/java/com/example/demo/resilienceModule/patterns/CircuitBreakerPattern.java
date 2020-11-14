@@ -37,9 +37,11 @@ public class CircuitBreakerPattern implements Pattern {
 				result.getResilienceModuleToExternalService().getTotalErrorTime() +
 				eTime);
 			return false;}).get();
-		time = System.currentTimeMillis() - time;
-		result.getResilienceModuleToExternalService().setTotalSuccessTime(
-				result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
+		if(aux) {
+			time = System.currentTimeMillis() - time;
+			result.getResilienceModuleToExternalService().setTotalSuccessTime(
+					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
+		}
 		return aux;
 	}
 	
@@ -70,7 +72,6 @@ public class CircuitBreakerPattern implements Pattern {
 		})
 		.onStateTransition(event -> {
 			result.getCircuitBreakerMetrics().setBreakCount( result.getCircuitBreakerMetrics().getBreakCount() + 1 );
-			System.out.println("mudou estado cb");
 		});
 		
 		decoratedSupplier = CircuitBreaker
