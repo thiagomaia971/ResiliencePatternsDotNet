@@ -22,9 +22,10 @@ public class RetryPattern implements Pattern {
 
 	private CheckedFunction0<Boolean> retryableSupplier;
 	
-	private long time;
+	private long errorTime, successTime;
 	
-	private long errorTime;
+
+	
 
 	public RetryPattern(Options params, Result result) {
 		connector = new Connector(params.getUrlConfiguration(), params.getRequestConfiguration().getTimeout());
@@ -33,24 +34,9 @@ public class RetryPattern implements Pattern {
 
 	@Override
 	public boolean request(Result result, Options options) {
-		time = errorTime = System.currentTimeMillis();
+		successTime = errorTime = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
-		if(Try.of(retryableSupplier).recover(throwable -> {
-			//so se quebrar o maximo de vezes
-			errorTime = System.currentTimeMillis() - errorTime;
-			result.getResilienceModuleToExternalService().setTotalErrorTime( 
-					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
-					errorTime);
-			return false;
-		}).get()) {
-			//entra no começo
-			System.out.println("foi aqui 2");
-			time = System.currentTimeMillis() - time;
-			result.getResilienceModuleToExternalService().setTotalSuccessTime(
-					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
-			
-			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
-			
+		if(Try.of(retryableSupplier).recover(throwable -> false).get()) {
 			return true;
 		} 
 		return false;
@@ -81,31 +67,28 @@ public class RetryPattern implements Pattern {
 
 		retry.getEventPublisher()
 		.onSuccess(event -> {
-			//TODO quebrando
-			System.out.println("foi aqui");
-			time = System.currentTimeMillis() - time;
+			successTime = System.currentTimeMillis() - successTime;
 			result.getResilienceModuleToExternalService().setTotalSuccessTime(
-					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
-			//result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
-			//result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
+					result.getResilienceModuleToExternalService().getTotalSuccessTime() + successTime);
+			
+			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
 		})
 		.onError(event -> {
-			//System.out.println("falhou o maximo de vezes");
-			//result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
-			//result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
+			errorTime = System.currentTimeMillis() - errorTime;
+			result.getResilienceModuleToExternalService().setTotalErrorTime( 
+					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
+					errorTime);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		}).onRetry(event -> {
-			
 			errorTime = System.currentTimeMillis() - errorTime;
 			result.getResilienceModuleToExternalService().setTotalErrorTime( 
 					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
 					errorTime);
 			
 			//reinicia timestamps
-			time = errorTime = System.currentTimeMillis();
+			successTime  = errorTime = System.currentTimeMillis();
 			
 			result.getRetryMetrics().setRetryCount(result.getRetryMetrics().getRetryCount() + 1);
-			//System.out.println("falhou, vai retentar");
 			result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		});
