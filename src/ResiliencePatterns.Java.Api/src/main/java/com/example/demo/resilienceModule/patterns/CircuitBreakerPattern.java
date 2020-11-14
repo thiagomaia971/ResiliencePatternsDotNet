@@ -28,9 +28,15 @@ public class CircuitBreakerPattern implements Pattern {
 	}
 
 	public boolean request(Result result, Options options) {
-		long time = System.currentTimeMillis();
+		long time,errorTime;
+		time = errorTime = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
-		boolean aux = Try.ofSupplier(decoratedSupplier).recover(throwable -> false).get();
+		boolean aux = Try.ofSupplier(decoratedSupplier).recover(throwable -> {
+			long eTime = System.currentTimeMillis() - errorTime;
+			result.getResilienceModuleToExternalService().setTotalErrorTime(
+				result.getResilienceModuleToExternalService().getTotalErrorTime() +
+				eTime);
+			return false;}).get();
 		time = System.currentTimeMillis() - time;
 		result.getResilienceModuleToExternalService().setTotalSuccessTime(
 				result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);

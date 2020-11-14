@@ -15,14 +15,19 @@ public class Normal implements Pattern {
 
 	@Override
 	public boolean request(Result result, Options options) {
+		long time, errorTime = 0;
 		try {
-			long time = System.currentTimeMillis();
+			time = errorTime = System.currentTimeMillis();
 			connector.makeRequest();
 			time = System.currentTimeMillis() - time;
 			result.getResilienceModuleToExternalService().setTotalSuccessTime(
 					result.getResilienceModuleToExternalService().getTotalSuccessTime() + time);
 			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
 		}catch(Exception ex) {
+			long eTime = System.currentTimeMillis() - errorTime;
+			result.getResilienceModuleToExternalService().setTotalErrorTime(
+				result.getResilienceModuleToExternalService().getTotalErrorTime() +
+				eTime);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 			return false;
 		}
