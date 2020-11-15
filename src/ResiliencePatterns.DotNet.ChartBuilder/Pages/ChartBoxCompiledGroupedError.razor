@@ -1,0 +1,17 @@
+﻿@page "/chart-box-plot/compiled/grouped/errors"
+@inject ChartBoxValuesService ChartBoxValuesService
+
+<ChartBox generate="Generate" name="Percentual dos Erros"></ChartBox>
+
+@code {
+
+    private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
+        IFileListEntry[] files,
+        IFileListEntry[] baseLineOne,
+        IFileListEntry[] baseLineTwo,
+        string system)
+    {
+        return await ChartBoxValuesService.GetClientToModulePercentualErrorByPath(files, baseLineOne, baseLineTwo, system, x => x.ClientToModuleTotalTime);
+    }
+
+}

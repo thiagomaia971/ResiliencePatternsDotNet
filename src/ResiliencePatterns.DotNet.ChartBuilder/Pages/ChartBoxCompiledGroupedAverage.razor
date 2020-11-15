@@ -1,130 +1,17 @@
 ﻿@page "/chart-box-plot/compiled/grouped/average"
-@using Syncfusion.Blazor.Charts
-@using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.DropDowns
-@using C1.Chart
-@using Newtonsoft.Json
-@using ResiliencePatternsDotNet.Commons
-@using BlazorInputFile
-@using System.IO
-@using ResiliencePatterns.DotNet.ChartBuilder.Entities
-@using ResiliencePatterns.DotNet.ChartBuilder.Services
-@inject NavigationManager NavigationManager
 @inject ChartBoxValuesService ChartBoxValuesService
 
-<div class="row">
-    <InputFile OnChange="@OnInputFileChange" multiple webkitdirectory />
-    <input type="text" id="ctrl" @bind-value="system" />
-    <button @onclick="Generate">Gerar</button>
-</div>
-@if (!loading && results.Any())
-{
-    <div class="row">
-        <div class="col-lg-12 control-section">
-            <SfChart @ref="@ChartObj" Title="Tempo Médio das Requisições">
-                <ChartEvents Load="ChartLoad" />
-                <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
-                <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
-                    <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
-                </ChartPrimaryXAxis>
-                <ChartSeriesCollection>
-                    @foreach (var item in results)
-                    {
-                        <ChartSeries DataSource="@item.Value.ToArray()" XName="x" YName="y" Name="@item.Key" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
-                            <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
-                        </ChartSeries>
-                    }
-                </ChartSeriesCollection>
-                <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
-            </SfChart>
-        </div>
-    </div>
-}
+<ChartBox generate="Generate" name="Tempo Médio das Requisições"></ChartBox>
 
-@code{
-    bool loading;
-    IFileListEntry[] files;
-    string system = "DotNet";
-    Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>
-    {
-    };
+@code {
 
-    SfChart ChartObj;
-    public bool Mean = true;
-    BoxPlotMode BoxPlot = BoxPlotMode.Normal;
-    public void ChangeMode(Microsoft.AspNetCore.Components.ChangeEventArgs args)
+    private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
+        IFileListEntry[] files,
+        IFileListEntry[] baseLineOne,
+        IFileListEntry[] baseLineTwo,
+        string system)
     {
-        this.BoxPlot = (BoxPlotMode)Enum.Parse(typeof(BoxPlotMode), args.Value.ToString(), true);
-    }
-    private void IsChecked(Syncfusion.Blazor.Buttons.ChangeEventArgs<bool> args)
-    {
-        Mean = args.Checked;
-        ChartObj.Refresh();
-    }
-    private void ChangeType(Syncfusion.Blazor.DropDowns.ChangeEventArgs<string> args)
-    {
-        this.BoxPlot = (BoxPlotMode)Enum.Parse(typeof(BoxPlotMode), args.Value.ToString(), true);
-        StateHasChanged();
-    }
-    public List<BoxandWhiskerData> AverageClientModuleChart = new List<BoxandWhiskerData>();
-    public List<BoxandWhiskerData> AverageModuleServiceChart = new List<BoxandWhiskerData>();
-
-    string CurrentUri;
-
-    private async Task OnInputFileChange(IFileListEntry[] e)
-    {
-        files = e;
+        return await ChartBoxValuesService.GetResilienceModuleToExternalAverageTimePerRequestTimeByPath(files, baseLineOne, baseLineTwo, system, x => x.ClientToModuleTotalTime);
     }
 
-    private async Task Generate(MouseEventArgs e)
-    {
-        try
-        {
-            loading = true;
-            results = await ChartBoxValuesService.GetResilienceModuleToExternalAverageTimePerRequestTimeByPath(files, system);
-            StateHasChanged();
-            loading = false;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            loading = false;
-        }
-    }
-
-    private async Task Changed(ChangeEventArgs e)
-    {
-        Console.WriteLine(e);
-    }
-
-    async Task HandleFileSelected(IFileListEntry[] files)
-    {
-        Console.WriteLine(files);
-        StateHasChanged();
-    }
-
-    void ChartLoad(ILoadedEventArgs Args)
-    {
-        CurrentUri = NavigationManager.Uri;
-        if (CurrentUri.IndexOf("material") > -1)
-        {
-            Args.Theme = ChartTheme.Material;
-        }
-        else if (CurrentUri.IndexOf("fabric") > -1)
-        {
-            Args.Theme = ChartTheme.Fabric;
-        }
-        else if (CurrentUri.IndexOf("bootstrap") > -1)
-        {
-            Args.Theme = ChartTheme.Bootstrap;
-        }
-        else if (CurrentUri.IndexOf("highcontrast") > -1)
-        {
-            Args.Theme = ChartTheme.HighContrast;
-        }
-        else
-        {
-            Args.Theme = ChartTheme.Bootstrap4;
-        }
-    }
 }
