@@ -12,16 +12,12 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 {
     public class ResultWriterService
     {
-        private readonly AutomaticRunnerConfiguration _automaticRunnerConfiguration;
         private IDictionary<ResultType, Action<ScenarioInput>> resultTypeHandler = new Dictionary<ResultType, Action<ScenarioInput>>
         {
             { ResultType.TXT, WriteTxt },
             { ResultType.CSV, WriteCsv },
             { ResultType.JSON, WriteJson },
         };
-
-        public ResultWriterService(AutomaticRunnerConfiguration automaticRunnerConfiguration) 
-            => _automaticRunnerConfiguration = automaticRunnerConfiguration;
 
         public void Write(ScenarioInput scenario) 
             => resultTypeHandler[scenario.ResultType](scenario);
@@ -90,7 +86,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
             }
         }
 
-        private static void WriteCompiledResultJson(ScenarioInput scenario)
+        public static void WriteCompiledResultJson(ScenarioInput scenario)
         {
             var baterias = scenario.Bateries.SelectMany(x => x.ClientResults).GroupBy(x => x.Count).ToList();
             foreach (var bateriaGrouped in baterias)
@@ -99,7 +95,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                 {
                     ClientToModuleTotalTime = y.Result.Select(x => (double) x.ClientToModule.TotalTime).GetMedian(),
                     ClientToModulePercentualError = y.Result
-                        .Select(x => ((double) x.ClientToModule.Error) / ((double) x.ClientToModule.Success)).GetMedian(),
+                        .Select(x => ((double) x.ClientToModule.Error) / ((double) x.ClientToModule.Total)).GetMedian(),
                     ResilienceModuleToExternalTotalSuccessTime = y.Result
                         .Select(x => (double) x.ResilienceModuleToExternalService.TotalSuccessTime).GetMedian(),
                     ResilienceModuleToExternalTotalErrorTime = y.Result
@@ -112,9 +108,10 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
                 if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}"))
                     Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}");
-                
+
+                var resultCompiledPath = scenario.ResultCompiledPath(bateriaGrouped.Key);
                 using (var streamWriter =
-                    new StreamWriter(scenario.ResultCompiledPath(bateriaGrouped.Key)))
+                    new StreamWriter(resultCompiledPath))
                 {
                     var contentJsonUnPrettyfied = JsonConvert.SerializeObject(results, Formatting.Indented);
                     streamWriter.WriteLine(contentJsonUnPrettyfied);

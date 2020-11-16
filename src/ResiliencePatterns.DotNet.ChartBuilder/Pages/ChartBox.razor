@@ -4,8 +4,9 @@
 
 <div class="row">
     <InputFile OnChange="@OnInputFileChange" multiple webkitdirectory />
-    <InputFile OnChange="@OnInputFileChangeBaseLineOne" multiple webkitdirectory />
-    <InputFile OnChange="@OnInputFileChangeBaseLineTwo" multiple webkitdirectory />
+    @* <InputFile OnChange="@OnInputFileChangeBaseLineOne" multiple webkitdirectory /> *@
+    @* <InputFile OnChange="@OnInputFileChangeBaseLineTwo" multiple webkitdirectory /> *@
+    <input type="text" id="ctrl" @bind-value="sucessType" />
     <input type="text" id="ctrl" @bind-value="system" />
     <button @onclick="Generate">Gerar</button>
 </div>
@@ -22,8 +23,8 @@
                 <ChartSeriesCollection>
                     @foreach (var item in results)
                     {
-                        <ChartSeries DataSource="@item.Value.ToArray()" XName="x" YName="y" Name="@item.Key" BoxPlotMode="@BoxPlot" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
-                            <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
+                        <ChartSeries DataSource="@item.Value.ToArray()" XName="x" YName="y" Name="@item.Key" BoxPlotMode="@BoxPlot" Close="y" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
+                            <ChartMarker Visible="false" Height="10" Width="10"></ChartMarker>
                         </ChartSeries>
                     }
                 </ChartSeriesCollection>
@@ -43,12 +44,13 @@
     IFileListEntry[] files = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineOne = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineTwo = new List<FileListEntryImpl>().ToArray();
+    string sucessType = "50_SUCESSO";
     string system = "DotNet";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
     
 
     SfChart ChartObj;
-    public bool Mean = true;
+    public bool Mean = false;
     BoxPlotMode BoxPlot = BoxPlotMode.Normal;
     public void ChangeMode(Microsoft.AspNetCore.Components.ChangeEventArgs args)
     {
@@ -69,7 +71,7 @@
 
     string CurrentUri;
 
-    private async Task OnInputFileChange(IFileListEntry[] e) => files = e;
+    private async Task OnInputFileChange(IFileListEntry[] e) => files = e.Where(x => x.RelativePath.Contains(sucessType)).ToArray();
     private async Task OnInputFileChangeBaseLineOne(IFileListEntry[] e) => baseLineOne = e;
     private async Task OnInputFileChangeBaseLineTwo(IFileListEntry[] e) => baseLineTwo = e;
 

@@ -54,8 +54,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 
         private MetricStatus ProcessRequests(ConfigurationSection configurationSection)
         {
-            while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests && 
-                   _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests)
+            while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests &&
+                   (configurationSection.RequestConfiguration.MaxRequests.HasValue ? _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests : true))
             {
                 // Console.WriteLine($"Client [{_metrics.Client.Total + 1}]");
                 var watch = new Stopwatch();

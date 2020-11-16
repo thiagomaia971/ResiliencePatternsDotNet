@@ -12,7 +12,7 @@ namespace ResiliencePatterns.DotNet.Domain.Configurations
         public int SuccessRequests { get; set; }
         
         [XmlAttribute("maxRequests")]
-        public int MaxRequests { get; set; }
+        public int? MaxRequests { get; set; }
         
         [XmlAttribute("delay")]
         public int Delay { get; set; }

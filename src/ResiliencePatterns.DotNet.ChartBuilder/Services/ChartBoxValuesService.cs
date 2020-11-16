@@ -21,27 +21,7 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetClientToModuleTotalTimeByPath(
-            IFileListEntry[] files, 
-            IFileListEntry[] baseLineOne, 
-            IFileListEntry[] baseLineTwo, 
-            string system, Func<MetricStatusCompiled, double> selector) 
-            => await GetAllDatas(files, baseLineOne, baseLineTwo, system, y => y.ClientToModuleTotalTime);
-        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetResilienceModuleToExternalAverageTimePerRequestTimeByPath(
-            IFileListEntry[] files, 
-            IFileListEntry[] baseLineOne, 
-            IFileListEntry[] baseLineTwo, 
-            string system, Func<MetricStatusCompiled, double> selector) 
-            => await GetAllDatas(files, baseLineOne, baseLineTwo, system, y => y.ResilienceModuleToExternalAverageTimePerRequest);
-        
-        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetClientToModulePercentualErrorByPath(
-            IFileListEntry[] files, 
-            IFileListEntry[] baseLineOne, 
-            IFileListEntry[] baseLineTwo, 
-            string system, Func<MetricStatusCompiled, double> selector) 
-            => await GetAllDatas(files, baseLineOne, baseLineTwo, system, y => y.ClientToModulePercentualError);
-
-        private async Task<Dictionary<string, List<BoxandWhiskerData>>> GetAllDatas(
+        public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetAllDatas(
             IFileListEntry[] files, 
             IFileListEntry[] baseLineOne, 
             IFileListEntry[] baseLineTwo, 
@@ -51,7 +31,7 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
             var results = files
                 .Where(x => x.Name.Contains("scenario-result-compiled") && x.RelativePath.Contains(system))
                 .Select(x => new FileList((FileListEntryImpl)x))
-                .OrderBy(x => x.ClientGroup + x.Ms)
+                .OrderBy(x => x.OrderBy)
                 .ToList();
             var scenarios = results.GroupBy(x => x.ScenarioGroup).ToList();
             var datas = new Dictionary<string, List<BoxandWhiskerData>>();
@@ -94,6 +74,8 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
         public int ClientGroup => int.Parse(Name.Split("[").LastOrDefault().Split("]").FirstOrDefault());
         public string ScenarioGroup => Name.Split("]").LastOrDefault().Split(".").FirstOrDefault();
         public int Ms => Name.Contains("ms") ? (int.Parse(Name.Split("_").LastOrDefault().Split("ms").FirstOrDefault())) : 0;
+        private int NameWidth => Name.Contains("BaseLine") ? 0 : (Name.Contains("Retry") ? 1000 : 2000);
+        public int OrderBy => ClientGroup + Ms + + NameWidth;
 
         public FileList(FileListEntryImpl file)
         {

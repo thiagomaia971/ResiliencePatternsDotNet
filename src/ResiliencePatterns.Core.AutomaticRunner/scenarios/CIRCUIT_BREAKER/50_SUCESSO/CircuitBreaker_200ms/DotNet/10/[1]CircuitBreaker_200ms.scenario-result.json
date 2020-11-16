@@ -1,25 +1,25 @@
 [
   {
     "ClientToModule": {
-      "TotalTime": 22,
-      "AverageTimePerRequest": 0.022,
-      "Success": 0,
-      "Error": 1000,
-      "Total": 1000
+      "TotalTime": 286,
+      "AverageTimePerRequest": 0.0024065768547891723,
+      "Success": 25,
+      "Error": 118816,
+      "Total": 118841
     },
     "ResilienceModuleToExternalService": {
-      "TotalSuccessTime": 0,
-      "TotalErrorTime": 9,
-      "AverageSuccessTimePerRequest": "NaN",
-      "Success": 0,
-      "Error": 2,
-      "Total": 2
+      "TotalSuccessTime": 166,
+      "TotalErrorTime": 71,
+      "AverageSuccessTimePerRequest": 6.64,
+      "Success": 25,
+      "Error": 30,
+      "Total": 55
     },
     "RetryMetrics": null,
     "CircuitBreakerMetrics": {
-      "BreakCount": 1,
+      "BreakCount": 15,
       "ResetStatCount": 0,
-      "TotalOfBreak": 200
+      "TotalOfBreak": 3000
     }
   }
 ]
