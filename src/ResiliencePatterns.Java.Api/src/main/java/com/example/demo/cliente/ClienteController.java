@@ -31,8 +31,7 @@ public class ClienteController {
 		Pattern pattern = this.getPattern(options, result);
 		
 		long time = System.currentTimeMillis();
-		for (int i = 0; i < options.getRequestConfiguration().getMaxRequests() && 
-						result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests() ; i++) {
+		for (int i = 0; stopCondition(i, options, result) ; i++) {
 			if(pattern.request(result, options)) {
 				result.getClientToModule().setSuccess(result.getClientToModule().getSuccess() + 1);
 			} else {
@@ -74,6 +73,15 @@ public class ClienteController {
 			return retry;
 		}
 		return normal;
+	}
+	
+	private boolean stopCondition(int i, Options options, Result result) {
+		if( options.getRunPolicy().equalsIgnoreCase(Util.CIRCUIT_BREAKER_PATTERN_KEY) && options.getRequestConfiguration().getMaxRequests() == null) {
+			return result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests();
+		} else {
+			return i < options.getRequestConfiguration().getMaxRequests() && 
+					result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests();
+		}
 	}
 
 
