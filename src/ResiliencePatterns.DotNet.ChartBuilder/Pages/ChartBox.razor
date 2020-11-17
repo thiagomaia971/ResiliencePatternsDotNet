@@ -7,6 +7,7 @@
     @* <InputFile OnChange="@OnInputFileChangeBaseLineOne" multiple webkitdirectory /> *@
     @* <InputFile OnChange="@OnInputFileChangeBaseLineTwo" multiple webkitdirectory /> *@
     <input type="text" id="ctrl" @bind-value="sucessType" />
+    <input type="text" id="ctrl" @bind-value="clientType" />
     <input type="text" id="ctrl" @bind-value="system" />
     <button @onclick="Generate">Gerar</button>
 </div>
@@ -35,19 +36,20 @@
 }
 
 @code{
-    [Parameter] 
-    public Func<IFileListEntry[], IFileListEntry[], IFileListEntry[], string, Task<Dictionary<string, List<BoxandWhiskerData>>>> generate { get; set; } 
+    [Parameter]
+    public Func<IFileListEntry[], IFileListEntry[], IFileListEntry[], string, Task<Dictionary<string, List<BoxandWhiskerData>>>> generate { get; set; }
     [Parameter]
     public string name { get; set; }
-    
+
     bool loading;
     IFileListEntry[] files = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineOne = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineTwo = new List<FileListEntryImpl>().ToArray();
     string sucessType = "50_SUCESSO";
+    string clientType = "[1];[25]";
     string system = "DotNet";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
-    
+
 
     SfChart ChartObj;
     public bool Mean = false;
@@ -71,7 +73,7 @@
 
     string CurrentUri;
 
-    private async Task OnInputFileChange(IFileListEntry[] e) => files = e.Where(x => x.RelativePath.Contains(sucessType)).ToArray();
+    private async Task OnInputFileChange(IFileListEntry[] e) => files = e;
     private async Task OnInputFileChangeBaseLineOne(IFileListEntry[] e) => baseLineOne = e;
     private async Task OnInputFileChangeBaseLineTwo(IFileListEntry[] e) => baseLineTwo = e;
 
@@ -80,7 +82,10 @@
         try
         {
             loading = true;
-            results = await generate(files, baseLineOne, baseLineTwo, system);
+            var fileListEntries = files.Where(x => x.RelativePath.Contains(sucessType)).ToArray();
+            fileListEntries = fileListEntries.Where(x => clientType.Split(";").Any(y => x.RelativePath.Contains(y))).ToArray();
+
+            results = await generate(fileListEntries, baseLineOne, baseLineTwo, system);
             // results = await ChartBoxValuesService.GetClientToModulePercentualErrorByPath(files, system);
             StateHasChanged();
             loading = false;

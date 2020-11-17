@@ -17,6 +17,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
 
         public ResiliencePatterns(ConfigurationSection configurationSection, MetricService metricService)
         {
+            Console.WriteLine("------------------- Created ResiliencePatterns ------------------- ");
             _configurationSection = configurationSection;
             _metricService = metricService;
             CreateRetryPolicy();
@@ -84,9 +85,10 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
                     {
                         _metricService.CircuitBreakerMetric.IncrementBreakCount();
                         _metricService.CircuitBreakerMetric.IncrementBreakTime((long) timeOfBreak.TotalMilliseconds);
-                        Console.WriteLine($"\tBreak for [{timeOfBreak}]");
+                        Console.WriteLine($"\t[{DateTime.Now}] Break for [{timeOfBreak}]");
                     },
-                    onReset: () => Console.WriteLine($"\tReseted"));
+                    onReset: () => Console.WriteLine($"\tReseted"),
+                    () => Console.WriteLine($"\t[{DateTime.Now}] HalfOpen"));
 
         private void CreateCircuitBreakerAdvancedPolicy() 
             => CircuitBreakerPolicy = Policy

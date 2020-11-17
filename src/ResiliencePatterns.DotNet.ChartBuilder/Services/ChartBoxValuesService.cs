@@ -42,7 +42,7 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
                 {
                     var data = new BoxandWhiskerData
                     {
-                        x = $"{fileList.ClientGroup} clients"
+                        x = $"{fileList.ClientGroup} clientes simultâneos"
                     };
 
                     var stream = files.First(xx => xx.RelativePath == fileList.RelativePath && xx.Name == fileList.Name).Data;

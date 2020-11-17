@@ -13,11 +13,13 @@ using Newtonsoft.Json.Serialization;
 using ResiliencePatterns.DotNet.Domain.Commands;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Services;
+using ResiliencePatterns.DotNet.Domain.Services.RequestHandles;
 
 namespace ResiliencePatterns.DotNet.Api
 {
     public class Startup
     {
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -27,6 +29,7 @@ namespace ResiliencePatterns.DotNet.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            ExternalCall.HttpClient = new HttpClient();
             // services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
             // services.AddMetrics();
             // var httpClient = new HttpClient();

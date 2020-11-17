@@ -14,6 +14,10 @@ using ResiliencePatterns.DotNet.Domain.Services.Resiliences;
 
 namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 {
+    public static class ExternalCall 
+    {
+        public static HttpClient HttpClient;
+    }
     public class RequestHandle : IRequestHandle
     {
         private readonly IResiliencePatterns _resiliencePatterns;
@@ -24,6 +28,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
         public RequestHandle(IResiliencePatterns resiliencePatterns, ConfigurationSection configurationSection,
             MetricService metrics, IHttpClientFactory httpClient)
         {
+            Console.WriteLine("------------------- Created RequestHandle ------------------- ");
             _resiliencePatterns = resiliencePatterns;
             _configurationSection = configurationSection;
             _metrics = metrics;
@@ -92,46 +97,24 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
-                var server = _configurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault().Split(':').FirstOrDefault();
-                var port = int.Parse(_configurationSection.UrlConfiguration.BaseUrl.Split(':').LastOrDefault());
-                using (var tcpClient = new TcpClient())
+                HttpResponseMessage result = null;
+                result = ResponseViaTCP(urlConfiguration);
+
+                Console.WriteLine($"Result: {result.StatusCode}");
+                stopWatch.Stop();
+
+                if (result.IsSuccessStatusCode)
                 {
-                    tcpClient.Connect(server, port);
-                    using NetworkStream networkStream = tcpClient.GetStream();
-                    networkStream.ReadTimeout = _configurationSection.RequestConfiguration.Timeout;
-                    using var writer = new StreamWriter(networkStream);
-                    var message = $@"{urlConfiguration.Method} / HTTP/1.1
-Host: {server}" + "\r\n\r\n";
-
-                    using var reader = new StreamReader(networkStream, Encoding.UTF8);
-                    byte[] bytes = Encoding.UTF8.GetBytes(message);
-                    networkStream.Write(bytes, 0, bytes.Length);
-                    var readToEnd = reader.ReadToEnd();
-                    //Console.WriteLine(readToEnd);
-                    var successCodes = new string[]
-                        {"HTTP/1.1 200", "HTTP/1.1 201", "HTTP/1.1 202", "HTTP/1.1 203", "HTTP/1.1 204"};
-                    
-                    var result = new HttpResponseMessage
-                    {
-                        StatusCode =  successCodes.Any(x => readToEnd.Contains(x)) ? HttpStatusCode.OK : HttpStatusCode.BadRequest
-                    };
-                    Console.WriteLine($"Result: {result.StatusCode}");
-
-                    stopWatch.Stop();
-
-                    if (result.IsSuccessStatusCode)
-                    {
-                        _metrics.IncrementeResilienceModuleSuccess();
-                        _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
-                    }else
-                        _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
+                    _metrics.IncrementeResilienceModuleSuccess();
+                    _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
+                }else
+                    _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
                         
 
-                    if (!result.IsSuccessStatusCode)
-                        throw new RequestException(result);
+                if (!result.IsSuccessStatusCode)
+                    throw new RequestException(result);
 
-                    return result;
-                }
+                return result;
             }
             catch (Exception e)
             {
@@ -139,6 +122,48 @@ Host: {server}" + "\r\n\r\n";
                 _metrics.IncrementeResilienceModuleError();
                 throw;
             }
+        }
+
+        private HttpResponseMessage ResponseViaHttpClient(UrlConfigurationSection urlConfiguration)
+        {
+            lock (ExternalCall.HttpClient)
+            {
+                if (ExternalCall.HttpClient.BaseAddress == null)
+                    ExternalCall.HttpClient.BaseAddress = new Uri(urlConfiguration.BaseUrl);
+                var httpMethod = new HttpMethod(urlConfiguration.Method);
+                return ExternalCall.HttpClient.SendAsync(new HttpRequestMessage(httpMethod, urlConfiguration.Action)).GetAwaiter().GetResult();    
+            }
+        }
+
+        private HttpResponseMessage ResponseViaTCP(UrlConfigurationSection urlConfiguration)
+        {
+            HttpResponseMessage result;
+            var server = _configurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault().Split(':').FirstOrDefault();
+            var port = int.Parse(_configurationSection.UrlConfiguration.BaseUrl.Split(':').LastOrDefault());
+            using (var tcpClient = new TcpClient())
+            {
+                tcpClient.Connect(server, port);
+                using NetworkStream networkStream = tcpClient.GetStream();
+                networkStream.ReadTimeout = _configurationSection.RequestConfiguration.Timeout;
+                using var writer = new StreamWriter(networkStream);
+                var message = $@"{urlConfiguration.Method} / HTTP/1.1
+Host: {server}" + "\r\n\r\n";
+
+                using var reader = new StreamReader(networkStream, Encoding.UTF8);
+                byte[] bytes = Encoding.UTF8.GetBytes(message);
+                networkStream.Write(bytes, 0, bytes.Length);
+                var readToEnd = reader.ReadToEnd();
+                //Console.WriteLine(readToEnd);
+                var successCodes = new string[]
+                    {"HTTP/1.1 200", "HTTP/1.1 201", "HTTP/1.1 202", "HTTP/1.1 203", "HTTP/1.1 204"};
+
+                result = new HttpResponseMessage
+                {
+                    StatusCode = successCodes.Any(x => readToEnd.Contains(x)) ? HttpStatusCode.OK : HttpStatusCode.BadRequest
+                };
+            }
+
+            return result;
         }
 
         private HttpResponseMessage HandleClientResult(HttpResponseMessage result)
