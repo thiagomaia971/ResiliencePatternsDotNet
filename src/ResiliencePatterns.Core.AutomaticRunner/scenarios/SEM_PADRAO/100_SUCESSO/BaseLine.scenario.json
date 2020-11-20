@@ -47,9 +47,11 @@
       "IsSimpleConfiguration": true,
       "DurationOfBreaking": 30000,
       "ExceptionsAllowedBeforeBreaking": 2,
-      "FailureThreshold": 0.5,
+      "FailureThreshold": 100,
       "SamplingDuration": 5000,
-      "MinimumThroughput": 20
+      "MinimumThroughput": 20,
+      "SlidingWindowSize": 2,
+      "MinimumNumberOfCalls": 2
     }
   },
   "AsyncClients": true
