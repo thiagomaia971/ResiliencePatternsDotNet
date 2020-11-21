@@ -1,0 +1,28 @@
+[
+  {
+    "ClientToModule": {
+      "TotalTime": 1051,
+      "AverageTimePerRequest": 0.012146918773981786,
+      "Success": 25,
+      "Error": 86499,
+      "Total": 86524
+    },
+    "ResilienceModuleToExternalService": {
+      "TotalSuccessTime": 181,
+      "TotalErrorTime": 862,
+      "AverageSuccessTimePerRequest": 7.24,
+      "Success": 25,
+      "Error": 16,
+      "Total": 41
+    },
+    "RetryMetrics": {
+      "RetryCount": 0,
+      "TotalTimeout": 0
+    },
+    "CircuitBreakerMetrics": {
+      "BreakCount": 12,
+      "ResetStatCount": 0,
+      "TotalOfBreak": 0
+    }
+  }
+]
