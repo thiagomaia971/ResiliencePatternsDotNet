@@ -1,5 +1,9 @@
 package com.example.demo.resilienceModule;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.mapper.UrlConfiguration;
@@ -8,11 +12,13 @@ import com.example.demo.mapper.UrlConfiguration;
 public class Connector {
 
 	private RestTemplate restTemplate;
+	private HttpEntity<String> entity = new HttpEntity<String>(new HttpHeaders());
 	
 	private String url;
 	private String method;
 	
 	public Connector(UrlConfiguration urlConfiguration, Integer timeout) {
+		
 		//if(timeout != null) {
 		//	HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		//	httpRequestFactory.setReadTimeout(timeout);
@@ -27,12 +33,8 @@ public class Connector {
 		this.method = urlConfiguration.getMethod();
 	}
 	
-	public Boolean makeRequest() {
-		if(method.equalsIgnoreCase("POST")) {
-			restTemplate.postForEntity(url, null, String.class);
-		} else {
-			restTemplate.getForObject(url, String.class);
-		}
-		return true;
+	public ResponseEntity<?> makeRequest() {
+		ResponseEntity<?> res = restTemplate.exchange(url, HttpMethod.GET, entity, String.class); 
+		return res;
 	}
 }

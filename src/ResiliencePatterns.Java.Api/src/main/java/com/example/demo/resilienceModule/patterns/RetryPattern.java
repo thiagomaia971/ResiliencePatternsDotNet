@@ -2,6 +2,8 @@ package com.example.demo.resilienceModule.patterns;
 
 import java.time.Duration;
 
+import org.springframework.http.ResponseEntity;
+
 import com.example.demo.mapper.Options;
 import com.example.demo.mapper.RetryConfiguration;
 import com.example.demo.mapper.result.Result;
@@ -22,7 +24,7 @@ public class RetryPattern implements Pattern {
 
 	private CheckedFunction0<Boolean> retryableSupplier;
 	
-	private long errorTime, successTime;
+	private long errorTime, accumlatedErrorTime, successTime, accumulatedSuccessTime, inactiveTime, accumulatedInactiveTime;
 	
 
 	
@@ -37,8 +39,11 @@ public class RetryPattern implements Pattern {
 		successTime = errorTime = System.currentTimeMillis();
 		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 		if(Try.of(retryableSupplier).recover(throwable -> false).get()) {
+			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
+			fillResultMetrics(result);
 			return true;
 		} 
+		fillResultMetrics(result);
 		return false;
 	}
 
@@ -67,34 +72,42 @@ public class RetryPattern implements Pattern {
 
 		retry.getEventPublisher()
 		.onSuccess(event -> {
-			successTime = System.currentTimeMillis() - successTime;
-			result.getResilienceModuleToExternalService().setTotalSuccessTime(
-					result.getResilienceModuleToExternalService().getTotalSuccessTime() + successTime);
-			
-			result.getResilienceModuleToExternalService().setSuccess(result.getResilienceModuleToExternalService().getSuccess() + 1);
+
 		})
 		.onError(event -> {
-			errorTime = System.currentTimeMillis() - errorTime;
-			result.getResilienceModuleToExternalService().setTotalErrorTime( 
-					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
-					errorTime);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		}).onRetry(event -> {
-			errorTime = System.currentTimeMillis() - errorTime;
-			result.getResilienceModuleToExternalService().setTotalErrorTime( 
-					result.getResilienceModuleToExternalService().getTotalErrorTime() + 
-					errorTime);
-			
-			//reinicia timestamps
-			successTime  = errorTime = System.currentTimeMillis();
+			inactiveTime = System.currentTimeMillis();
+			accumlatedErrorTime += (System.currentTimeMillis() - errorTime);
 			
 			result.getRetryMetrics().setRetryCount(result.getRetryMetrics().getRetryCount() + 1);
 			result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() + 1);
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 		});
 
-		retryableSupplier = Retry.decorateCheckedSupplier(this.retry, connector::makeRequest);
-
+		retryableSupplier = Retry.decorateCheckedSupplier(this.retry, this::prepareRequest);
+		
 	}
+	
+	
+	private Boolean prepareRequest() {
+		//reinicia timestamps
+		successTime  = errorTime = System.currentTimeMillis();
+		if(inactiveTime != 0 ) { //veio de um retry
+			accumulatedInactiveTime += (System.currentTimeMillis() - inactiveTime);
+			inactiveTime = 0;
+		}
+		connector.makeRequest();
+		accumulatedSuccessTime += (System.currentTimeMillis() - successTime);
+		return true;
+	}
+	
+	private void fillResultMetrics(Result result) {
+		result.getRetryMetrics().setTotalTimeout(accumulatedInactiveTime);
+		result.getResilienceModuleToExternalService().setTotalSuccessTime(accumulatedSuccessTime);
+		result.getResilienceModuleToExternalService().setTotalErrorTime(accumlatedErrorTime);
+	}
+	
+	
 
 }

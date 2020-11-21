@@ -40,6 +40,9 @@ public class ClienteController {
 		}
 		time = System.currentTimeMillis() - time;
 		result.getClientToModule().setTotalTime(time);
+		
+		adjustParamsForCircuitBreaker(options, result);
+		
 		result.getClientToModule().setTotal(result.getClientToModule().getSuccess() + result.getClientToModule().getError());
 		result.getClientToModule().setAverageTimePerRequest((float) result.getClientToModule().getTotalTime() / result.getClientToModule().getTotal() );
 		
@@ -54,11 +57,6 @@ public class ClienteController {
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	@PostMapping("/config")
-	public ResponseEntity<?> config() {
-		RetryConfigCustomizer.of("", builder -> builder.maxAttempts(2));
-		return null;
-	}
 	
 	private Pattern getPattern(Options options, Result result) {
 		String patternKey = options.getRunPolicy();
@@ -79,9 +77,14 @@ public class ClienteController {
 		if( options.getRunPolicy().equalsIgnoreCase(Util.CIRCUIT_BREAKER_PATTERN_KEY) && options.getRequestConfiguration().getMaxRequests() == null) {
 			return result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests();
 		} else {
-			return i < options.getRequestConfiguration().getMaxRequests() && 
-					result.getResilienceModuleToExternalService().getSuccess() < options.getRequestConfiguration().getSuccessRequests();
+			return i < options.getRequestConfiguration().getMaxRequests() &&
+					result.getClientToModule().getSuccess() < options.getRequestConfiguration().getSuccessRequests();
 		}
+	}
+	
+	private void adjustParamsForCircuitBreaker(Options options, Result result) {
+		if(options.getRunPolicy().equalsIgnoreCase(Util.CIRCUIT_BREAKER_PATTERN_KEY))
+			result.getClientToModule().setError(result.getResilienceModuleToExternalService().getError());
 	}
 
 

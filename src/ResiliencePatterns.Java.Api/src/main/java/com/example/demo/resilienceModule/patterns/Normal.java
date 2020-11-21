@@ -16,6 +16,7 @@ public class Normal implements Pattern {
 	@Override
 	public boolean request(Result result, Options options) {
 		long time, errorTime = 0;
+		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() +1);
 		try {
 			time = errorTime = System.currentTimeMillis();
 			connector.makeRequest();
@@ -31,7 +32,6 @@ public class Normal implements Pattern {
 			result.getResilienceModuleToExternalService().setError(result.getResilienceModuleToExternalService().getError() + 1);
 			return false;
 		}
-		result.getResilienceModuleToExternalService().setTotal(result.getResilienceModuleToExternalService().getTotal() +1);
 		return true;
 	}
 
