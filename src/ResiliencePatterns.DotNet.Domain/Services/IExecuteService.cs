@@ -7,6 +7,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services
 {
     public interface IExecuteService
     {
-        MetricStatus Execute(ConfigurationSection configurationSection);
+        Task<MetricStatus> Execute(ConfigurationSection configurationSection);
     }
 }

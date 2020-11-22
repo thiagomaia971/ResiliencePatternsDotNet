@@ -16,23 +16,23 @@ namespace ResiliencePatterns.DotNet.Domain.Services
     public class ExecuteService : IExecuteService
     {
         private readonly MetricService _metrics;
-        private readonly IHttpClientFactory _httpClient;
-        private IResiliencePatterns ResiliencePatterns { get; set; }
-        private IRequestHandle RequestHandle { get; set; }
+        private readonly IResiliencePatterns _resiliencePatterns;
+        private readonly IRequestHandle _requestHandle;
 
-        public ExecuteService(MetricService metricService, IHttpClientFactory httpClient)
+        public ExecuteService(MetricService metricService, IResiliencePatterns resiliencePatterns, IRequestHandle requestHandle)
         {
             _metrics = metricService;
-            _httpClient = httpClient;
+            _resiliencePatterns = resiliencePatterns;
+            _requestHandle = requestHandle;
         }
 
-        public MetricStatus Execute(ConfigurationSection configurationSection)
+        public Task<MetricStatus> Execute(ConfigurationSection configurationSection)
         {
             // Console.WriteLine($"Teste:     {configurationSection.ToJson()}");
             // Console.WriteLine();
             
-            ResiliencePatterns = new Resiliences.ResiliencePatterns(configurationSection, _metrics);
-            RequestHandle = new RequestHandle(ResiliencePatterns, configurationSection, _metrics, _httpClient);
+             _resiliencePatterns.Configure(configurationSection);
+            _requestHandle.Configure(configurationSection);
             // InitializePrometheusServer(configurationSection);
 
             return ProcessRequests(configurationSection);
@@ -52,7 +52,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
                 .Start();
         }
 
-        private MetricStatus ProcessRequests(ConfigurationSection configurationSection)
+        private async Task<MetricStatus> ProcessRequests(ConfigurationSection configurationSection)
         {
             var watch = new Stopwatch();
             watch.Start();
@@ -60,7 +60,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests &&
                    (configurationSection.RequestConfiguration.MaxRequests.HasValue ? _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests : true))
             {
-                ProcessRequest(configurationSection);
+                await ProcessRequest(configurationSection);
             }
                 
             watch.Stop();
@@ -69,7 +69,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services
             return _metrics.MetricStatus;
         }
 
-        private HttpResponseMessage ProcessRequest(ConfigurationSection configurationSection) 
-            => RequestHandle.HandleRequest(configurationSection.UrlConfiguration);
+        private Task<HttpResponseMessage> ProcessRequest(ConfigurationSection configurationSection) 
+            => _requestHandle.HandleRequest(configurationSection.UrlConfiguration);
     }
 }

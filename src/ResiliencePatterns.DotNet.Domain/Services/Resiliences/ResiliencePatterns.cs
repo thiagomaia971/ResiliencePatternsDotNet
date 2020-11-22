@@ -10,23 +10,27 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
 {
     public class ResiliencePatterns : IResiliencePatterns
     {
-        private readonly ConfigurationSection _configurationSection;
         private readonly MetricService _metricService;
+        public ConfigurationSection ConfigurationSection { get; private set; }
         public RetryPolicy RetryPolicy { get; private set; }
         public CircuitBreakerPolicy CircuitBreakerPolicy { get; private set; }
 
-        public ResiliencePatterns(ConfigurationSection configurationSection, MetricService metricService)
+        public ResiliencePatterns(MetricService metricService)
+        {
+            _metricService = metricService;
+        }
+        
+        public void Configure(ConfigurationSection configurationSection)
         {
             Console.WriteLine("------------------- Created ResiliencePatterns ------------------- ");
-            _configurationSection = configurationSection;
-            _metricService = metricService;
+            ConfigurationSection = configurationSection;
             CreateRetryPolicy();
             CreateCircuitBreakerPolicy();
         }
 
         private void CreateRetryPolicy()
         {
-            switch (_configurationSection.RetryConfiguration.SleepDurationType)
+            switch (ConfigurationSection.RetryConfiguration.SleepDurationType)
             {
                 case SleepDurationType.FIXED:
                     CreateRetryFixedSleepDurationPolicy();
@@ -43,9 +47,9 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
             => RetryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetry(
-                    retryCount: _configurationSection.RetryConfiguration.Count,
+                    retryCount: ConfigurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
-                        TimeSpan.FromMilliseconds(_configurationSection.RetryConfiguration.SleepDuration),
+                        TimeSpan.FromMilliseconds(ConfigurationSection.RetryConfiguration.SleepDuration),
                     onRetry: (exception, timeout, context) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
@@ -57,9 +61,9 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
             => RetryPolicy = Policy
                 .Handle<Exception>()
                 .WaitAndRetry(
-                    retryCount: _configurationSection.RetryConfiguration.Count,
+                    retryCount: ConfigurationSection.RetryConfiguration.Count,
                     sleepDurationProvider: (i) =>
-                        TimeSpan.FromMilliseconds(Math.Pow(_configurationSection.RetryConfiguration.ExponentialBackoffPow, i) * _configurationSection.RetryConfiguration.SleepDuration),
+                        TimeSpan.FromMilliseconds(Math.Pow(ConfigurationSection.RetryConfiguration.ExponentialBackoffPow, i) * ConfigurationSection.RetryConfiguration.SleepDuration),
                     onRetry: (exception, timeout, context) =>
                     {
                         _metricService.RetryMetric.IncrementRetryCount();
@@ -69,7 +73,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
 
         private void CreateCircuitBreakerPolicy()
         {
-            if (_configurationSection.CircuitBreakerConfiguration.IsSimpleConfiguration)
+            if (ConfigurationSection.CircuitBreakerConfiguration.IsSimpleConfiguration)
                 CreateCircuitBreakerSimplePolicy();
             else
                 CreateCircuitBreakerAdvancedPolicy();
@@ -79,8 +83,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
             => CircuitBreakerPolicy = Policy
                 .Handle<Exception>()
                 .CircuitBreaker(
-                    exceptionsAllowedBeforeBreaking: _configurationSection.CircuitBreakerConfiguration.ExceptionsAllowedBeforeBreaking,
-                    durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
+                    exceptionsAllowedBeforeBreaking: ConfigurationSection.CircuitBreakerConfiguration.ExceptionsAllowedBeforeBreaking,
+                    durationOfBreak: TimeSpan.FromMilliseconds(ConfigurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
                     onBreak: (exception, timeOfBreak) =>
                     {
                         _metricService.CircuitBreakerMetric.IncrementBreakCount();
@@ -94,10 +98,10 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
             => CircuitBreakerPolicy = Policy
                 .Handle<Exception>()
                 .AdvancedCircuitBreaker(
-                    failureThreshold: _configurationSection.CircuitBreakerConfiguration.FailureThreshold,
-                    samplingDuration: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.SamplingDuration),
-                    minimumThroughput: _configurationSection.CircuitBreakerConfiguration.MinimumThroughput,
-                    durationOfBreak: TimeSpan.FromMilliseconds(_configurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
+                    failureThreshold: ConfigurationSection.CircuitBreakerConfiguration.FailureThreshold,
+                    samplingDuration: TimeSpan.FromMilliseconds(ConfigurationSection.CircuitBreakerConfiguration.SamplingDuration),
+                    minimumThroughput: ConfigurationSection.CircuitBreakerConfiguration.MinimumThroughput,
+                    durationOfBreak: TimeSpan.FromMilliseconds(ConfigurationSection.CircuitBreakerConfiguration.DurationOfBreaking),
                     onBreak: (exception, timeOfBreak) =>
                     {
                         _metricService.CircuitBreakerMetric.IncrementBreakCount();

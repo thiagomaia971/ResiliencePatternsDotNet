@@ -14,31 +14,30 @@ using ResiliencePatterns.DotNet.Domain.Services.Resiliences;
 
 namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 {
-    public static class ExternalCall 
-    {
-        public static HttpClient HttpClient;
-    }
     public class RequestHandle : IRequestHandle
     {
         private readonly IResiliencePatterns _resiliencePatterns;
-        private readonly ConfigurationSection _configurationSection;
         private readonly MetricService _metrics;
-        private readonly IHttpClientFactory _httpClient;
+        private readonly HttpClient _httpClient;
+        public ConfigurationSection ConfigurationSection { get; private set; }
 
-        public RequestHandle(IResiliencePatterns resiliencePatterns, ConfigurationSection configurationSection,
-            MetricService metrics, IHttpClientFactory httpClient)
+        public RequestHandle(IResiliencePatterns resiliencePatterns, MetricService metrics, HttpClient httpClient)
         {
-            Console.WriteLine("------------------- Created RequestHandle ------------------- ");
             _resiliencePatterns = resiliencePatterns;
-            _configurationSection = configurationSection;
             _metrics = metrics;
             _httpClient = httpClient;
+        }
+
+        public void Configure(ConfigurationSection configurationSection)
+        {
+            Console.WriteLine("------------------- Created RequestHandle ------------------- ");
+            ConfigurationSection = configurationSection;
             CreateCustomMetric();
         }
 
         private void CreateCustomMetric()
         {
-            switch (_configurationSection.RunPolicy)
+            switch (ConfigurationSection.RunPolicy)
             {
                 case RunPolicyEnum.RETRY:
                     _metrics.CreateRetryCustom();
@@ -55,26 +54,33 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
         }
 
-        public HttpResponseMessage HandleRequest(UrlConfigurationSection urlConfiguration)
+        public async Task<HttpResponseMessage> HandleRequest(UrlConfigurationSection urlConfiguration)
         {
-            switch (_configurationSection.RunPolicy)
+            var httpResponseMessage = await Get(urlConfiguration);
+            return HandleClientResult(httpResponseMessage);
+        }
+
+        private async Task<HttpResponseMessage> Get(UrlConfigurationSection urlConfiguration)
+        {
+            switch (ConfigurationSection.RunPolicy)
             {
                 case RunPolicyEnum.RETRY:
-                    return HandleClientResult(_resiliencePatterns.RetryPolicy
+                    return await _resiliencePatterns.RetryPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
-                        .Result);
+                        .Result;
+                    break;
                 case RunPolicyEnum.CIRCUIT_BREAKER:
-                    return HandleClientResult(_resiliencePatterns.CircuitBreakerPolicy
+                    return await _resiliencePatterns.CircuitBreakerPolicy
                         .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
-                        .Result);
+                        .Result;
                 case RunPolicyEnum.ALL:
-                    return HandleClientResult(_resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
+                    return await _resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
                             _resiliencePatterns.CircuitBreakerPolicy.Execute(() => MakeRequest(urlConfiguration)))
-                        .Result);
+                        .Result;
                 case RunPolicyEnum.NONE:
                     try
                     {
-                        return HandleClientResult(MakeRequest(urlConfiguration));
+                        return await MakeRequest(urlConfiguration);
                     }
                     catch (RequestException e)
                     {
@@ -90,15 +96,16 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             }
         }
 
-        private HttpResponseMessage MakeRequest(UrlConfigurationSection urlConfiguration)
+        private async Task<HttpResponseMessage> MakeRequest(UrlConfigurationSection urlConfiguration)
         {
-            try
-            {
+            // try
+            // {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
                 HttpResponseMessage result = null;
-                result = ResponseViaTCP(urlConfiguration);
+                // result = await ResponseViaTCP(urlConfiguration);
+                result = await ResponseViaHttpClient(urlConfiguration);
 
                 Console.WriteLine($"Result: {result.StatusCode}");
                 stopWatch.Stop();
@@ -107,44 +114,45 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                 {
                     _metrics.IncrementeResilienceModuleSuccess();
                     _metrics.IncrementeResilienceModuleSuccessTime(stopWatch.ElapsedMilliseconds);
-                }else
+                }
+                else
                     _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
-                        
+
 
                 if (!result.IsSuccessStatusCode)
-                    throw new RequestException(result);
+                    _metrics.IncrementeResilienceModuleError();
 
                 return result;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                _metrics.IncrementeResilienceModuleError();
-                throw;
-            }
+            // }
+            // catch (Exception e)
+            // {
+            //     Console.WriteLine(e);
+            // }
         }
 
-        private HttpResponseMessage ResponseViaHttpClient(UrlConfigurationSection urlConfiguration)
+        private Task<HttpResponseMessage> ResponseViaHttpClient(UrlConfigurationSection urlConfiguration)
         {
-            lock (ExternalCall.HttpClient)
+            lock (_httpClient)
             {
-                if (ExternalCall.HttpClient.BaseAddress == null)
-                    ExternalCall.HttpClient.BaseAddress = new Uri(urlConfiguration.BaseUrl);
+                if (_httpClient.BaseAddress == null)
+                    _httpClient.BaseAddress = new Uri(urlConfiguration.BaseUrl);
                 var httpMethod = new HttpMethod(urlConfiguration.Method);
-                return ExternalCall.HttpClient.SendAsync(new HttpRequestMessage(httpMethod, urlConfiguration.Action)).GetAwaiter().GetResult();    
+                return _httpClient.SendAsync(new HttpRequestMessage(httpMethod, urlConfiguration.Action));    
             }
         }
 
-        private HttpResponseMessage ResponseViaTCP(UrlConfigurationSection urlConfiguration)
+        private async Task<HttpResponseMessage> ResponseViaTCP(UrlConfigurationSection urlConfiguration)
         {
             HttpResponseMessage result;
-            var server = _configurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault().Split(':').FirstOrDefault();
-            var port = int.Parse(_configurationSection.UrlConfiguration.BaseUrl.Split(':').LastOrDefault());
+            var server = ConfigurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault().Split(':').FirstOrDefault();
+            var port = int.Parse(ConfigurationSection.UrlConfiguration.BaseUrl.Split(':').LastOrDefault());
+            // var server = ConfigurationSection.UrlConfiguration.BaseUrl.Split("//").LastOrDefault();
+            // var port = 80;
             using (var tcpClient = new TcpClient())
             {
                 tcpClient.Connect(server, port);
                 using NetworkStream networkStream = tcpClient.GetStream();
-                networkStream.ReadTimeout = _configurationSection.RequestConfiguration.Timeout;
+                networkStream.ReadTimeout = ConfigurationSection.RequestConfiguration.Timeout;
                 using var writer = new StreamWriter(networkStream);
                 var message = $@"{urlConfiguration.Method} / HTTP/1.1
 Host: {server}" + "\r\n\r\n";

@@ -1,5 +1,6 @@
 ﻿using Polly.CircuitBreaker;
 using Polly.Retry;
+using ResiliencePatterns.DotNet.Domain.Configurations;
 
 namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
 {
@@ -7,5 +8,7 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
     {
         RetryPolicy RetryPolicy { get; }
         CircuitBreakerPolicy CircuitBreakerPolicy { get; }
+
+        void Configure(ConfigurationSection configurationSection);
     }
 }

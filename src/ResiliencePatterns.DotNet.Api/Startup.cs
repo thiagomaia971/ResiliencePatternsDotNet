@@ -14,6 +14,7 @@ using ResiliencePatterns.DotNet.Domain.Commands;
 using ResiliencePatterns.DotNet.Domain.Common;
 using ResiliencePatterns.DotNet.Domain.Services;
 using ResiliencePatterns.DotNet.Domain.Services.RequestHandles;
+using ResiliencePatterns.DotNet.Domain.Services.Resiliences;
 
 namespace ResiliencePatterns.DotNet.Api
 {
@@ -29,13 +30,13 @@ namespace ResiliencePatterns.DotNet.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            ExternalCall.HttpClient = new HttpClient();
             // services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
             // services.AddMetrics();
             // var httpClient = new HttpClient();
-            // services.AddSingleton(httpClient);
-            services.AddHttpClient();
+            services.AddSingleton<HttpClient>();
             services.AddScoped<IExecuteService, ExecuteService>();
+            services.AddScoped<IResiliencePatterns, Domain.Services.Resiliences.ResiliencePatterns>();
+            services.AddScoped<IRequestHandle, RequestHandle>();
             services.AddScoped<MetricService>();
             // services.AddScoped<MetricsRegistry>();
 

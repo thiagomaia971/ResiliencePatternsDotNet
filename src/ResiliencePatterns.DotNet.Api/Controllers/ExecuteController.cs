@@ -18,7 +18,7 @@ namespace ResiliencePatterns.DotNet.Api.Controllers
         }
         
         [HttpPost]
-        public MetricStatus Execute(ExecuteCommand executeCommand)
+        public Task<MetricStatus> Execute(ExecuteCommand executeCommand)
             => _executeService.Execute(executeCommand);
     }
 }
