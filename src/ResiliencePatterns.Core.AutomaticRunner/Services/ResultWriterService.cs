@@ -65,11 +65,13 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
 
         private static void WriteEachClientResultJson(ScenarioInput scenario)
         {
+            if (Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}"))
+                Directory.Delete($"{scenario.Directory}\\{scenario.CurrentSystemName}", true);
+            else
+                Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}");
+
             foreach (var scenarioResult in scenario.Bateries)
             {
-                if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}"))
-                    Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}");
-
                 if (!Directory.Exists($"{scenario.Directory}\\{scenario.CurrentSystemName}\\{scenarioResult.Count}"))
                     Directory.CreateDirectory($"{scenario.Directory}\\{scenario.CurrentSystemName}\\{scenarioResult.Count}");
                 

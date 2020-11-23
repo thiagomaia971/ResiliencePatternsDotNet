@@ -1,28 +1,51 @@
 [
   {
     "ClientToModule": {
-      "TotalTime": 875,
-      "AverageTimePerRequest": 18.229166666666668,
+      "TotalTime": 234,
+      "AverageTimePerRequest": 5.7073170731707314,
       "Success": 25,
-      "Error": 23,
-      "Total": 48
+      "Error": 16,
+      "Total": 41
     },
     "ResilienceModuleToExternalService": {
-      "TotalSuccessTime": 256,
-      "TotalErrorTime": 90,
-      "AverageSuccessTimePerRequest": 10.24,
+      "TotalSuccessTime": 153,
+      "TotalErrorTime": 59,
+      "AverageSuccessTimePerRequest": 6.12,
       "Success": 25,
-      "Error": 23,
-      "Total": 48
+      "Error": 16,
+      "Total": 41
+    },
+    "RetryMetrics": null,
+    "CircuitBreakerMetrics": {
+      "BreakCount": 0,
+      "ResetStatCount": 0,
+      "TotalOfBreak": 0
+    }
+  },
+  {
+    "ClientToModule": {
+      "TotalTime": 1114,
+      "AverageTimePerRequest": 18.88135593220339,
+      "Success": 25,
+      "Error": 34,
+      "Total": 59
+    },
+    "ResilienceModuleToExternalService": {
+      "TotalSuccessTime": 135,
+      "TotalErrorTime": 74,
+      "AverageSuccessTimePerRequest": 5.4,
+      "Success": 25,
+      "Error": 34,
+      "Total": 59
     },
     "RetryMetrics": {
       "RetryCount": 0,
       "TotalTimeout": 0
     },
     "CircuitBreakerMetrics": {
-      "BreakCount": 7,
+      "BreakCount": 12,
       "ResetStatCount": 0,
-      "TotalOfBreak": 532
+      "TotalOfBreak": 912
     }
   }
 ]

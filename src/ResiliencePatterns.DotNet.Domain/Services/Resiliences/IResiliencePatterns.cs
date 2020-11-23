@@ -6,8 +6,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
 {
     public interface IResiliencePatterns
     {
-        RetryPolicy RetryPolicy { get; }
-        CircuitBreakerPolicy CircuitBreakerPolicy { get; }
+        AsyncRetryPolicy RetryPolicy { get; }
+        AsyncCircuitBreakerPolicy CircuitBreakerPolicy { get; }
 
         void Configure(ConfigurationSection configurationSection);
     }

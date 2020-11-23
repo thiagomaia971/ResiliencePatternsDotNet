@@ -132,7 +132,7 @@ namespace ResiliencePatterns.Core.AutomaticRunner.Services
                             Console.ForegroundColor = ConsoleColor.Green;
                         else
                             Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"[{subScenarioStep.ToString().PadLeft(3)}/{subScenario.ToString().PadLeft(3)}]: {httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
+                        Console.WriteLine($"[{subScenarioStep.ToString().PadLeft(3)}/{subScenario.ToString().PadLeft(3)}][{httpResponseMessage.StatusCode}]: {httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
                         Console.ForegroundColor = ConsoleColor.White;
                         
                         return  JsonConvert.DeserializeObject<MetricStatus>(httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult());

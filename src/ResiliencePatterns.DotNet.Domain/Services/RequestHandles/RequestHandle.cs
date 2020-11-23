@@ -65,17 +65,17 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
             switch (ConfigurationSection.RunPolicy)
             {
                 case RunPolicyEnum.RETRY:
-                    return await _resiliencePatterns.RetryPolicy
-                        .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
+                    return (await _resiliencePatterns.RetryPolicy
+                        .ExecuteAndCaptureAsync(async () => await MakeRequest(urlConfiguration)))
                         .Result;
-                    break;
                 case RunPolicyEnum.CIRCUIT_BREAKER:
-                    return await _resiliencePatterns.CircuitBreakerPolicy
-                        .ExecuteAndCapture(() => MakeRequest(urlConfiguration))
+                    return (await _resiliencePatterns.CircuitBreakerPolicy
+                        .ExecuteAndCaptureAsync(() => MakeRequest(urlConfiguration)))
                         .Result;
                 case RunPolicyEnum.ALL:
-                    return await _resiliencePatterns.RetryPolicy.ExecuteAndCapture(() =>
-                            _resiliencePatterns.CircuitBreakerPolicy.Execute(() => MakeRequest(urlConfiguration)))
+                    return (await _resiliencePatterns.RetryPolicy
+                            .ExecuteAndCaptureAsync(() =>
+                                _resiliencePatterns.CircuitBreakerPolicy.ExecuteAsync(() => MakeRequest(urlConfiguration))))
                         .Result;
                 case RunPolicyEnum.NONE:
                     try
@@ -98,8 +98,8 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 
         private async Task<HttpResponseMessage> MakeRequest(UrlConfigurationSection urlConfiguration)
         {
-            // try
-            // {
+            try
+            {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
@@ -118,16 +118,17 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                 else
                     _metrics.IncrementeResilienceModuleErrorTime(stopWatch.ElapsedMilliseconds);
 
-
                 if (!result.IsSuccessStatusCode)
-                    _metrics.IncrementeResilienceModuleError();
+                    throw new RequestException(result);
 
                 return result;
-            // }
-            // catch (Exception e)
-            // {
-            //     Console.WriteLine(e);
-            // }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                _metrics.IncrementeResilienceModuleError();
+                throw;
+            }
         }
 
         private Task<HttpResponseMessage> ResponseViaHttpClient(UrlConfigurationSection urlConfiguration)
