@@ -30,7 +30,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
 
         public void Configure(ConfigurationSection configurationSection)
         {
-            Console.WriteLine("------------------- Created RequestHandle ------------------- ");
             ConfigurationSection = configurationSection;
             CreateCustomMetric();
         }
@@ -107,7 +106,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services.RequestHandles
                 // result = await ResponseViaTCP(urlConfiguration);
                 result = await ResponseViaHttpClient(urlConfiguration);
 
-                Console.WriteLine($"Result: {result.StatusCode}");
                 stopWatch.Stop();
 
                 if (result.IsSuccessStatusCode)

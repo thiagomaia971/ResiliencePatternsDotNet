@@ -1,109 +1,34 @@
-﻿@if (collapseNavMenu)
-{
-    <div class="top-row pl-4 navbar navbar-dark">
-        <a class="navbar-brand" href="">ChartBuilder</a>
-        <button class="navbar-toggler" @onclick="ToggleNavMenu" style="display: block;">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
+﻿<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">ChartBuilder</a>
+    <button class="navbar-toggler" style="display: block;">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
 
-    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-        <ul class="nav flex-column">
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <span class="oi oi-home" aria-hidden="true"></span> Home
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot">
-                    <span class="oi oi-chart-box-plot" aria-hidden="true"></span> Total
-                </NavLink>
-            </li>
-            @*<li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled">
-                    <span class="oi oi-chart-box-plot-compiled" aria-hidden="true"></span> Média compilada
-                </NavLink>
-            </li>*@
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped">
-                    <span class="oi oi-chart-box-plot-compiled-grouped" aria-hidden="true"></span> Total Tempo
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/average">
-                    <span class="oi oi-chart-box-plot-compiled-grouped-average" aria-hidden="true"></span> Média Tempo
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors">
-                    <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Percentual de Erro
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors/fracionado">
-                    <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Tempo total de Erro
-                </NavLink>
-            </li>
-        </ul>
-    </div>    
-}
-else
-{
-    <div class="top-row pl-4 navbar navbar-dark">
-        <button class="navbar-toggler" @onclick="ToggleNavMenu" style="display: block;">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-
-    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-        <ul class="nav flex-column">
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <span class="oi oi-home" aria-hidden="true"></span> Home
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Total
-                </NavLink>
-            </li>
-            @*<li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Média compilada
-                </NavLink>
-            </li>*@
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Total Tempo
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/average">
-                    <span class="oi oi-list-rich" aria-hidden="true"></span> Média Tempo
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors">
-                    <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Percentual de Erro
-                </NavLink>
-            </li>
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors/fracionado">
-                    <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Tempo total de Erro
-                </NavLink>
-            </li>
-        </ul>
-    </div>
-}
-
+<div>
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="chart-box-plot/compiled/grouped">
+                <span class="oi oi-chart-box-plot-compiled-grouped" aria-hidden="true"></span> Tempo Total
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/average">
+                <span class="oi oi-chart-box-plot-compiled-grouped-average" aria-hidden="true"></span> Tempo Médio
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors">
+                <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Percentual de Erro
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="chart-box-plot/compiled/grouped/errors/fracionado">
+                <span class="oi oi-chart-box-plot-compiled-grouped-error" aria-hidden="true"></span> Tempo total de Erro
+            </NavLink>
+        </li>
+    </ul>
+</div>    
 
 @code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
 }

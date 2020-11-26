@@ -56,16 +56,16 @@ namespace ResiliencePatterns.DotNet.Domain.Services
         {
             var watch = new Stopwatch();
             watch.Start();
+            Console.WriteLine($"[{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}] Start process requests");
             
             while (_metrics.Client.Success < configurationSection.RequestConfiguration.SuccessRequests &&
                    (configurationSection.RequestConfiguration.MaxRequests.HasValue ? _metrics.Client.Total < configurationSection.RequestConfiguration.MaxRequests : true))
-            {
                 await ProcessRequest(configurationSection);
-            }
                 
             watch.Stop();
             _metrics.IncrementClientTotalTime(watch.ElapsedMilliseconds);
 
+            Console.WriteLine($"[{DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss")}] Ended process requests with {watch.ElapsedMilliseconds} ms");
             return _metrics.MetricStatus;
         }
 

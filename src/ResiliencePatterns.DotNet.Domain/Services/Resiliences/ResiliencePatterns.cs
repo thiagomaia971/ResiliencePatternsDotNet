@@ -22,7 +22,6 @@ namespace ResiliencePatterns.DotNet.Domain.Services.Resiliences
         
         public void Configure(ConfigurationSection configurationSection)
         {
-            Console.WriteLine("------------------- Created ResiliencePatterns ------------------- ");
             ConfigurationSection = configurationSection;
             CreateRetryPolicy();
             CreateCircuitBreakerPolicy();

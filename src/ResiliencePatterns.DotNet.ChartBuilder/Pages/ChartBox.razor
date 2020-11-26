@@ -1,31 +1,34 @@
 ﻿@using System.Linq.Expressions
 @inject NavigationManager NavigationManager
 @inject ChartBoxValuesService ChartBoxValuesService
+@inject IJSRuntime JS
 
 <div class="row">
     <InputFile OnChange="@OnInputFileChange" multiple webkitdirectory />
     @* <InputFile OnChange="@OnInputFileChangeBaseLineOne" multiple webkitdirectory /> *@
     @* <InputFile OnChange="@OnInputFileChangeBaseLineTwo" multiple webkitdirectory /> *@
-    <input type="text" id="ctrl" @bind-value="sucessType" />
-    <input type="text" id="ctrl" @bind-value="clientType" />
-    <input type="text" id="ctrl" @bind-value="system" />
+    <input type="text" id="ctrl" @bind-value="@system"/>
+    <input type="text" id="ctrl" @bind-value="@sucessType"/>
+    <input type="text" id="ctrl" @bind-value="@clientType"/>
     <button @onclick="Generate">Gerar</button>
+    <input type="text" id="ctrl" @bind-value="downloadFileName" style="width: 30%;" />
+    <button @onclick="Download" disabled="@string.IsNullOrEmpty(downloadFileName)">Baixar</button>
 </div>
 @if (!loading && results.Any())
 {
     <div class="row">
-        <div class="col-lg-12 control-section">
+        <div id="chart" class="col-lg-12 control-section">
             <SfChart @ref="@ChartObj" Title="@name">
                 <ChartEvents Load="ChartLoad" />
                 <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
                 <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
-                    @*<ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>*@
+                    <ChartAxisMajorGridLines Width="1"></ChartAxisMajorGridLines>
                 </ChartPrimaryXAxis>
                 <ChartSeriesCollection>
                     @foreach (var item in results)
                     {
                         <ChartSeries DataSource="@item.Value.ToArray()" XName="x" YName="y" Name="@item.Key" BoxPlotMode="@BoxPlot" Close="y" ShowMean="@Mean" Type="ChartSeriesType.BoxAndWhisker">
-                            <ChartMarker Visible="false" Height="10" Width="10"></ChartMarker>
+                            <ChartMarker Visible="true" Height="10" Width="10"></ChartMarker>
                         </ChartSeries>
                     }
                 </ChartSeriesCollection>
@@ -40,16 +43,28 @@
     public Func<IFileListEntry[], IFileListEntry[], IFileListEntry[], string, Task<Dictionary<string, List<BoxandWhiskerData>>>> generate { get; set; }
     [Parameter]
     public string name { get; set; }
-
+    [Parameter]
+    public string nameKey { get; set; }
+    
     bool loading;
     IFileListEntry[] files = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineOne = new List<FileListEntryImpl>().ToArray();
     IFileListEntry[] baseLineTwo = new List<FileListEntryImpl>().ToArray();
+    string system = "DotNet";
     string sucessType = "50_SUCESSO";
     string clientType = "[1];[25];[50];[100]";
-    string system = "DotNet";
+    string downloadFileName = "";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            downloadFileName = GetDownloadFileName();
+        base.OnAfterRender(firstRender);
+    }
+
+    private string GetDownloadFileName()
+        => $"[{system}]_[{sucessType}]_[{clientType.Replace(";", "_")}]_[{nameKey}]";
 
     SfChart ChartObj;
     public bool Mean = false;
@@ -74,13 +89,15 @@
     string CurrentUri;
 
     private async Task OnInputFileChange(IFileListEntry[] e) => files = e;
-    private async Task OnInputFileChangeBaseLineOne(IFileListEntry[] e) => baseLineOne = e;
-    private async Task OnInputFileChangeBaseLineTwo(IFileListEntry[] e) => baseLineTwo = e;
+
+    private async Task InputChanged(ChangeEventArgs e)
+        => downloadFileName = GetDownloadFileName();  
 
     private async Task Generate(MouseEventArgs e)
     {
         try
         {
+            downloadFileName = GetDownloadFileName();
             loading = true;
             var fileListEntries = files.Where(x => x.RelativePath.Contains(sucessType)).ToArray();
             fileListEntries = fileListEntries.Where(x => clientType.Split(";").Any(y => x.RelativePath.Contains(y))).ToArray();
@@ -96,7 +113,12 @@
             loading = false;
         }
     }
-
+    
+    private async Task Download(MouseEventArgs e)
+    {
+        await JS.InvokeAsync<string>("captureAndUpload", downloadFileName);
+    }
+    
     private async Task Changed(ChangeEventArgs e)
     {
         Console.WriteLine(e);
