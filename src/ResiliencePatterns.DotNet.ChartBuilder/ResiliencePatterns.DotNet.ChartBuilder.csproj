@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -17,7 +17,10 @@
 
     <ItemGroup>
       <Watch Remove="Pages\ChartBoxCompiledGroupedAverage.razor" />
+      <Watch Remove="Pages\ChartBoxCompiledGroupedBySuccess.razor" />
       <Watch Remove="Pages\ChartBoxCompiledGroupedErrors.razor" />
+      <Watch Remove="Pages\ChartBoxFilter.razor" />
+      <Watch Remove="Pages\_ChartBoxFilter.razor" />
     </ItemGroup>
 
     <ItemGroup>

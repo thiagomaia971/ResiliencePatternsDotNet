@@ -7,14 +7,17 @@
 
     private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
         IFileListEntry[] files,
-        IFileListEntry[] baseLineOne,
-        IFileListEntry[] baseLineTwo,
         string system)
     {
-        return await ChartBoxValuesService.GetAllDatas(files, baseLineOne, baseLineTwo, system, x =>
-        {
-            return (double.IsInfinity(x.ClientToModulePercentualError) ? 0 : x.ClientToModulePercentualError) * 100;
-        });
+        return await ChartBoxValuesService.GetAllDatas(
+            files: files,
+            system: system,
+            groupBy: x => x.ScenarioGroup,
+            groupByName: x => $"{x.ScenarioGroup} clientes simultâneos",
+            selector: x =>
+                {
+                    return (double.IsInfinity(x.ClientToModulePercentualError) ? 0 : x.ClientToModulePercentualError) * 100;
+                });
     }
 
 }

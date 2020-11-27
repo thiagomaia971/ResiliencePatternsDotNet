@@ -1,17 +1,19 @@
 ﻿@page "/chart-box-plot/compiled/grouped"
 @inject ChartBoxValuesService ChartBoxValuesService
 
-<ChartBox generate="Generate" name="Tempo Total das Requisições" nameKey="TotalTime"></ChartBox>
+    <ChartBox generate="Generate" name="Tempo Total das Requisições" nameKey="TotalTime" successRate="50_SUCESSO" concurrentClients="[1];[25];[50];[100]"></ChartBox>
 
 @code {
 
     private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
-        IFileListEntry[] files, 
-        IFileListEntry[] baseLineOne, 
-        IFileListEntry[] baseLineTwo, 
+        IFileListEntry[] files,
         string system)
     {
-        return await ChartBoxValuesService.GetAllDatas(files, baseLineOne, baseLineTwo, system, x => x.ClientToModuleTotalTime);
+        return await ChartBoxValuesService.GetAllDatas(
+            files: files,
+            system: system,
+            groupBy: x => x.ScenarioGroup,
+            groupByName: x => $"{x.ClientGroup} clientes simultâneos",
+            selector: x => x.ClientToModuleTotalTime);
     }
-
 }

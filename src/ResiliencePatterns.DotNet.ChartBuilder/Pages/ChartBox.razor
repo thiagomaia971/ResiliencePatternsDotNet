@@ -3,17 +3,33 @@
 @inject ChartBoxValuesService ChartBoxValuesService
 @inject IJSRuntime JS
 
-<div class="row">
-    <InputFile OnChange="@OnInputFileChange" multiple webkitdirectory />
-    @* <InputFile OnChange="@OnInputFileChangeBaseLineOne" multiple webkitdirectory /> *@
-    @* <InputFile OnChange="@OnInputFileChangeBaseLineTwo" multiple webkitdirectory /> *@
-    <input type="text" id="ctrl" @bind-value="@system"/>
-    <input type="text" id="ctrl" @bind-value="@sucessType"/>
-    <input type="text" id="ctrl" @bind-value="@clientType"/>
-    <button @onclick="Generate">Gerar</button>
-    <input type="text" id="ctrl" @bind-value="downloadFileName" style="width: 30%;" />
-    <button @onclick="Download" disabled="@string.IsNullOrEmpty(downloadFileName)">Baixar</button>
-</div>
+    <div class="row">
+        <div class="form-group col">
+            <label for="files">Files</label>
+            <InputFile OnChange="@OnInputFileChange" multiple webkitdirectory id="files" class="form-control-file" />
+        </div>
+        <div class="form-group col">
+            <label for="system">System</label>
+            <input type="text" @bind-value="@system" id="system" class="form-control" />
+        </div>
+        <div class="form-group col">
+            <label for="successRate">Success Rate</label>
+            <input type="text" @bind-value="@successRate" id="successRate" class="form-control" />
+        </div>
+        <div class="form-group col">
+            <label for="concurrentClients">Concurrent Clients</label>
+            <input type="text" @bind-value="@concurrentClients" id="concurrentClients" class="form-control" />
+            <button @onclick="Generate" class="btn btn-primary">Generate</button>
+        </div>
+        <div class="form-group col">
+            <label for="downloadFileName">Download File Name</label>
+            <input type="text" @bind-value="@downloadFileName" id="downloadFileName" class="form-control" />
+        </div>
+        <div class="form-group col">
+            <button @onclick="Download" disabled="@string.IsNullOrEmpty(downloadFileName)" class="btn btn-primary">Download</button>
+        </div>
+    </div>
+
 @if (!loading && results.Any())
 {
     <div class="row">
@@ -40,19 +56,24 @@
 
 @code{
     [Parameter]
-    public Func<IFileListEntry[], IFileListEntry[], IFileListEntry[], string, Task<Dictionary<string, List<BoxandWhiskerData>>>> generate { get; set; }
+    public Func<IFileListEntry[], string, Task<Dictionary<string, List<BoxandWhiskerData>>>> generate { get; set; }
     [Parameter]
     public string name { get; set; }
     [Parameter]
     public string nameKey { get; set; }
-    
+
     bool loading;
     IFileListEntry[] files = new List<FileListEntryImpl>().ToArray();
-    IFileListEntry[] baseLineOne = new List<FileListEntryImpl>().ToArray();
-    IFileListEntry[] baseLineTwo = new List<FileListEntryImpl>().ToArray();
-    string system = "DotNet";
-    string sucessType = "50_SUCESSO";
-    string clientType = "[1];[25];[50];[100]";
+
+    [Parameter]
+    public string system { get; set; }= "DotNet";
+
+    [Parameter]
+    public string successRate { get; set; } = "50_SUCESSO";
+
+    [Parameter]
+    public string concurrentClients { get; set; }= "[1];[25];[50];[100]";
+
     string downloadFileName = "";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
 
@@ -64,7 +85,7 @@
     }
 
     private string GetDownloadFileName()
-        => $"[{system}]_[{sucessType}]_[{clientType.Replace(";", "_")}]_[{nameKey}]";
+        => $"[{system}]_[{successRate}]_[{concurrentClients.Replace(";", "_")}]_[{nameKey}]";
 
     SfChart ChartObj;
     public bool Mean = false;
@@ -91,7 +112,7 @@
     private async Task OnInputFileChange(IFileListEntry[] e) => files = e;
 
     private async Task InputChanged(ChangeEventArgs e)
-        => downloadFileName = GetDownloadFileName();  
+        => downloadFileName = GetDownloadFileName();
 
     private async Task Generate(MouseEventArgs e)
     {
@@ -99,11 +120,10 @@
         {
             downloadFileName = GetDownloadFileName();
             loading = true;
-            var fileListEntries = files.Where(x => x.RelativePath.Contains(sucessType)).ToArray();
-            fileListEntries = fileListEntries.Where(x => clientType.Split(";").Any(y => x.RelativePath.Contains(y))).ToArray();
+            var fileListEntries = files.Where(x => successRate.Split(";").Any(y => x.RelativePath.Contains(y))).ToArray();
+            fileListEntries = fileListEntries.Where(x => concurrentClients.Split(";").Any(y => x.RelativePath.Contains(y))).ToArray();
 
-            results = await generate(fileListEntries, baseLineOne, baseLineTwo, system);
-            // results = await ChartBoxValuesService.GetClientToModulePercentualErrorByPath(files, system);
+            results = await generate(fileListEntries, system);
             StateHasChanged();
             loading = false;
         }
@@ -113,12 +133,12 @@
             loading = false;
         }
     }
-    
+
     private async Task Download(MouseEventArgs e)
     {
         await JS.InvokeAsync<string>("captureAndUpload", downloadFileName);
     }
-    
+
     private async Task Changed(ChangeEventArgs e)
     {
         Console.WriteLine(e);

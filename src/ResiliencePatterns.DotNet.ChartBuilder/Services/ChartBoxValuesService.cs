@@ -23,42 +23,56 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
 
         public async Task<Dictionary<string, List<BoxandWhiskerData>>> GetAllDatas(
             IFileListEntry[] files, 
-            IFileListEntry[] baseLineOne, 
-            IFileListEntry[] baseLineTwo, 
-            string system, Func<MetricStatusCompiled, double> selector)
+            string system, 
+            Func<FileList, string> groupBy,
+            Func<FileList, string> groupByName,
+            Func<MetricStatusCompiled, double> selector)
         {
-            files = files.Concat(baseLineOne).Concat(baseLineTwo).ToArray();
-            var results = files
-                .Where(x => x.Name.Contains("scenario-result-compiled") && x.RelativePath.Contains(system))
-                .Select(x => new FileList((FileListEntryImpl)x))
-                .OrderBy(x => x.OrderBy)
-                .ToList();
-            var scenarios = results.GroupBy(x => x.ScenarioGroup).ToList();
-            var datas = new Dictionary<string, List<BoxandWhiskerData>>();
-            foreach (var scenario in scenarios)
+            try
             {
-                var _datas = new List<BoxandWhiskerData>();
-                foreach (var fileList in scenario)
+                var results = files
+                    .Where(x => x.Name.Contains("scenario-result-compiled") && x.RelativePath.Contains(system))
+                    .Select(x => new FileList((FileListEntryImpl)x))
+                    .OrderBy(x => x.OrderByResults)
+                    .ToList();
+
+                var batches = new Dictionary<string, List<BoxandWhiskerData>>();
+                foreach (var scenario in results.GroupBy(groupBy).ToList())
                 {
-                    var data = new BoxandWhiskerData
-                    {
-                        x = $"{fileList.ClientGroup} clientes simultâneos"
-                    };
+                    var group = batches.FirstOrDefault(x => x.Key == scenario.Key);
+                    if (group.Key == null)
+                        group = new KeyValuePair<string, List<BoxandWhiskerData>>(scenario.Key, new List<BoxandWhiskerData>());
 
-                    var stream = files.First(xx => xx.RelativePath == fileList.RelativePath && xx.Name == fileList.Name).Data;
-                    using (var streamReader = new StreamReader(stream))
+                    foreach (var fileList in scenario.OrderBy(x => x.OrderByBatchs))
                     {
-                        var resultJson = await streamReader.ReadToEndAsync();
-                        var result = JsonConvert
-                            .DeserializeObject<MetricStatusCompiled[]>(resultJson).ToList();
-                        data.y = result.Where(z => z != null).Select(selector).ToArray();
+                        var byName = groupByName(fileList);
+                        var data = group.Value.FirstOrDefault(x => x.x == byName) ?? new BoxandWhiskerData { x = byName, y = new double[0] };
+                        
+                        var stream = files.First(xx => xx.RelativePath == fileList.RelativePath && xx.Name == fileList.Name).Data;
+                        using (var streamReader = new StreamReader(stream))
+                        {
+                            var resultJson = await streamReader.ReadToEndAsync();
+                            var result = JsonConvert
+                                .DeserializeObject<MetricStatusCompiled[]>(resultJson).ToList();
+                            var enumerable = result.Where(z => z != null).Select(selector).ToList();
+                            enumerable.AddRange(data.y);
+
+                            data.y = enumerable.ToArray();
+                        }
+
+                        if (!group.Value.Exists(x => x.x == data.x))
+                            group.Value.Add(data);
                     }
-                    _datas.Add(data);
+                    batches.Add(scenario.Key, group.Value);
                 }
-                datas.Add(scenario.Key, _datas);
-            }
 
-            return datas;
+                return batches;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<string[]> GetByPath(string path)
@@ -73,9 +87,11 @@ namespace ResiliencePatterns.DotNet.ChartBuilder.Services
     {
         public int ClientGroup => int.Parse(Name.Split("[").LastOrDefault().Split("]").FirstOrDefault());
         public string ScenarioGroup => Name.Split("]").LastOrDefault().Split(".").FirstOrDefault();
+        public string ScenarioSucessTax => RelativePath.Split("_SUCESSO").FirstOrDefault().Split("/").LastOrDefault();
         public int Ms => Name.Contains("ms") ? (int.Parse(Name.Split("_").LastOrDefault().Split("ms").FirstOrDefault())) : 0;
         private int NameWidth => Name.Contains("BaseLine") ? 0 : (Name.Contains("Retry") ? 1000 : 2000);
-        public int OrderBy => ClientGroup + Ms + + NameWidth;
+        public int OrderByBatchs => int.Parse(ScenarioSucessTax);
+        public int OrderByResults => ClientGroup + Ms + + NameWidth;
 
         public FileList(FileListEntryImpl file)
         {
