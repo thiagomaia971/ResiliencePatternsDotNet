@@ -9,9 +9,10 @@
   ],
   "UrlFetch": {
     "BaseUrl": [
-      "http://localhost:5002"
+      "http://localhost:5001"
     ],
     "BaseUrlName": [
+      "DotNet",
       "Java"
     ],
     "ActionUrl": "/execute",
@@ -47,11 +48,9 @@
       "IsSimpleConfiguration": true,
       "DurationOfBreaking": 75,
       "ExceptionsAllowedBeforeBreaking": 2,
-      "FailureThreshold": 100,
+      "FailureThreshold": 0.5,
       "SamplingDuration": 5000,
-      "MinimumThroughput": 20,
-      "SlidingWindowSize": 2,
-      "MinimumNumberOfCalls": 2
+      "MinimumThroughput": 20
     }
   },
   "AsyncClients": true

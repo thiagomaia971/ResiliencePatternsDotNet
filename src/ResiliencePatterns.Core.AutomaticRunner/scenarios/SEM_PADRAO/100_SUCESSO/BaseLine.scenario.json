@@ -12,7 +12,8 @@
       "http://localhost:5001"
     ],
     "BaseUrlName": [
-      "DotNet"
+      "DotNet",
+      "Java"
     ],
     "ActionUrl": "/execute",
     "Method": "POST"
@@ -47,11 +48,9 @@
       "IsSimpleConfiguration": true,
       "DurationOfBreaking": 30000,
       "ExceptionsAllowedBeforeBreaking": 2,
-      "FailureThreshold": 100,
+      "FailureThreshold": 0.5,
       "SamplingDuration": 5000,
-      "MinimumThroughput": 20,
-      "SlidingWindowSize": 2,
-      "MinimumNumberOfCalls": 2
+      "MinimumThroughput": 20
     }
   },
   "AsyncClients": true

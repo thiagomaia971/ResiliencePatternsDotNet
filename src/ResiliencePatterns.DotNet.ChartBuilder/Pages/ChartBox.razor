@@ -34,7 +34,7 @@
 {
     <div class="row">
         <div id="chart" class="col-lg-12 control-section">
-            <SfChart @ref="@ChartObj" Title="@name">
+            <SfChart @ref="@ChartObj" Title="@name" Palettes="@palettes">
                 <ChartEvents Load="ChartLoad" />
                 <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
                 <ChartPrimaryXAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift" LabelIntersectAction="LabelIntersectAction.Trim" ValueType="Syncfusion.Blazor.Charts.ValueType.Category">
@@ -73,6 +73,8 @@
 
     [Parameter]
     public string concurrentClients { get; set; }= "[1];[25];[50];[100]";
+
+    public String[] palettes = new String[] { "#1b6ec2", "#41ff6c", "#30bf50", "#21a23e", "#15792c", "#FA3F2F", "#BA3023", "#7A2017", "#580F0B" };
 
     string downloadFileName = "";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
