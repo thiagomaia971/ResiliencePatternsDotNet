@@ -1,0 +1,23 @@
+﻿@page "/chart-box-plot/percentage-error"
+@inject ChartBoxValuesService ChartBoxValuesService
+
+<ChartBox generate="Generate" name="Percentual dos Erros" nameKey="PercentualError"></ChartBox>
+
+@code {
+
+    private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
+        IFileListEntry[] files,
+        string system)
+    {
+        return await ChartBoxValuesService.GetAllDatas(
+            files: files,
+            system: system,
+            groupBy: x => x.ScenarioGroup,
+            groupByName: x => $"{x.ClientGroup} clientes simultâneos",
+            selector: x =>
+                {
+                    return (double.IsInfinity(x.ClientToModulePercentualError) ? 0 : x.ClientToModulePercentualError) * 100;
+                });
+    }
+
+}

@@ -1,0 +1,23 @@
+﻿@page "/chart-box-plot/retention-rate"
+@inject ChartBoxValuesService ChartBoxValuesService
+
+<ChartBox generate="Generate" name="Taxa de Retenção" nameKey="RetentionRate"></ChartBox>
+
+@code {
+
+    private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
+        IFileListEntry[] files,
+        string system)
+    {
+        return await ChartBoxValuesService.GetAllDatas(
+            files: files,
+            system: system,
+            groupBy: x => x.ScenarioGroup,
+            groupByName: x => $"{x.ClientGroup} clientes simultâneos",
+            selector: x =>
+                {
+                    return x.ResilienceModuleToExternalTotalErrorTime;
+                });
+    }
+
+}

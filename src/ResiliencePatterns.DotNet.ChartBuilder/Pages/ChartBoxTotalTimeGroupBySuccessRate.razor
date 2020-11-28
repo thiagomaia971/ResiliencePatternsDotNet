@@ -1,0 +1,23 @@
+﻿@page "/chart-box-plot/total-time/group-by/success-rate"
+@inject ChartBoxValuesService ChartBoxValuesService
+
+<ChartBox generate="Generate" name="Tempo Total das Requisições" nameKey="TotalTimeGroupBySuccessRate" successRate="50_SUCESSO;75_SUCESSO;100_SUCESSO" concurrentClients="[50]"></ChartBox>
+
+@code {
+
+    private async Task<Dictionary<string, List<BoxandWhiskerData>>> Generate(
+        IFileListEntry[] files,
+        string system)
+    {
+        return await ChartBoxValuesService.GetAllDatas(
+            files: files, 
+            system: system, 
+            groupBy: x => x.ScenarioGroup, 
+            groupByName: x => $"{x.ScenarioSucessTax}% taxa de sucesso",
+            selector: x =>
+                {
+                    return x.ClientToModuleTotalTime;
+                });
+    }
+
+}

@@ -1,19 +1,38 @@
 [
   {
     "ClientToModule": {
-      "TotalTime": 200,
-      "AverageTimePerRequest": 4.0,
+      "TotalTime": 264,
+      "AverageTimePerRequest": 3.9402985074626864,
       "Success": 25,
-      "Error": 25,
-      "Total": 50
+      "Error": 42,
+      "Total": 67
     },
     "ResilienceModuleToExternalService": {
-      "TotalSuccessTime": 136,
-      "TotalErrorTime": 64,
-      "AverageSuccessTimePerRequest": 5.44,
+      "TotalSuccessTime": 160,
+      "TotalErrorTime": 61,
+      "AverageSuccessTimePerRequest": 6.4,
       "Success": 25,
-      "Error": 25,
-      "Total": 50
+      "Error": 21,
+      "Total": 46
+    },
+    "RetryMetrics": null,
+    "CircuitBreakerMetrics": null
+  },
+  {
+    "ClientToModule": {
+      "TotalTime": 276,
+      "AverageTimePerRequest": 4.524590163934426,
+      "Success": 25,
+      "Error": 36,
+      "Total": 61
+    },
+    "ResilienceModuleToExternalService": {
+      "TotalSuccessTime": 162,
+      "TotalErrorTime": 114,
+      "AverageSuccessTimePerRequest": 6.48,
+      "Success": 25,
+      "Error": 36,
+      "Total": 61
     },
     "RetryMetrics": {
       "RetryCount": 0,
