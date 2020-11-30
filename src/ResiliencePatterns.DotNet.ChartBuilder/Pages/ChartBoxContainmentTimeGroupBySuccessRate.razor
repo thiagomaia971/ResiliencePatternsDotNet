@@ -1,7 +1,7 @@
-﻿@page "/chart-box-plot/retention-rate"
+﻿@page "/chart-box-plot/containment-time/group-by/success-rate"
 @inject ChartBoxValuesService ChartBoxValuesService
 
-<ChartBox generate="Generate" name="Taxa de Retenção" nameKey="RetentionRate"></ChartBox>
+<ChartBox generate="Generate" name="Tempo de Contenção" nameKey="ContainmentTimeGroupBySuccessRate" successRate="50_SUCESSO;75_SUCESSO;100_SUCESSO" concurrentClients="[50]"></ChartBox>
 
 @code {
 
@@ -13,7 +13,7 @@
             files: files,
             system: system,
             groupBy: x => x.ScenarioGroup,
-            groupByName: x => $"{x.ClientGroup} clientes simultâneos",
+            groupByName: x => $"{x.ScenarioSucessTax}% taxa de sucesso",
             selector: x =>
                 {
                     return x.ResilienceModuleToExternalTotalErrorTime;
