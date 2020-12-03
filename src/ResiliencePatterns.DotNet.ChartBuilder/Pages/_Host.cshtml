@@ -18,14 +18,34 @@
     <link href="_content/Syncfusion.Blazor/styles/bootstrap4.css" rel="stylesheet" />
     
     <style type="text/css">
+        text[id*='ChartTitle'] {
+            font-size: 17px !important;
+        }
+
+        text[id*='chart_legend_text'] {
+            font-weight: bold !important;
+            font-size: 12px !important;
+        }
+
+        text[id*='AxisLabel'] {
+            font-weight: bold !important;
+            font-size: 14px !important;
+        }
+
+
+        path[id*='BoxPath'] {
+             stroke-width: 1.5px;
+        }
+
         .sf-license-warning {
             display: none;
         }
+
         .sidebar .nav-item a {
             line-height: normal !important;
         }
-        @@media (min-width: 768px)
-        {
+
+        @@media (min-width: 768px) {
             .sidebar {
                 width: 210px;
             }

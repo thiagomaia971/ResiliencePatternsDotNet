@@ -49,6 +49,8 @@
                     }
                 </ChartSeriesCollection>
                 <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                <ChartLegendSettings Visible="true" ShapeHeight="15" ShapeWidth="15">
+                </ChartLegendSettings>
             </SfChart>
         </div>
     </div>
@@ -74,7 +76,7 @@
     [Parameter]
     public string concurrentClients { get; set; }= "[1];[25];[50];[100]";
 
-    public String[] palettes = new String[] { "#1b6ec2", "#41ff6c", "#30bf50", "#21a23e", "#15792c", "#FA3F2F", "#BA3023", "#7A2017", "#580F0B" };
+    public String[] palettes = new String[] { "#CC99FF", "#66FFB2", "#33FF99", "#00FF80", "#00CC66", "#99CCFF", "#66B2FF", "#3399FF", "#0080FF" };
 
     string downloadFileName = "";
     Dictionary<string, List<BoxandWhiskerData>> results = new Dictionary<string, List<BoxandWhiskerData>>();
