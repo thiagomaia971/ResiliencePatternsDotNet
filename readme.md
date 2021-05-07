@@ -122,3 +122,19 @@ This project with implement examples with Retry and Circuit Breaker resilience p
     }
 }
 ```
+
+---
+
+## How to run
+
+### Prerequisites
+[.Net Core SDK 3.1](https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-aspnetcore-3.1.14-windows-x64-installer)
+[Docker](https://www.docker.com/)
+
+### Running
+* In the root of this repo
+* Run: ```docker-compose up```
+    * This command will run ```HTTPBIN```, ```Vaurien``` (proxy), ```API (C#)```, ```API (Java)```
+* Now left run the ```AutomaticRunner```, this program will get all tests in ```json``` and will trigger all calls to the API.
+    * ```cd src/ResiliencePatterns.Core.AutomaticRunner```
+    * ```dotnet run```
