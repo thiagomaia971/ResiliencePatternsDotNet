@@ -33,20 +33,20 @@
     },
     "RequestConfiguration": {
       "SuccessRequests": 25,
-      "MaxRequests": null,
+      "MaxRequests": 1000,
       "Delay": 0,
-      "Timeout": 3600000
+      "Timeout": 360000
     },
-    "RunPolicy": "CIRCUIT_BREAKER",
+    "RunPolicy": "NONE",
     "RetryConfiguration": {
-      "Count": 5,
+      "Count": 1,
       "SleepDuration": 500,
       "SleepDurationType": "EXPONENTIAL_BACKOFF",
       "ExponentialBackoffPow": 1.5
     },
     "CircuitBreakerConfiguration": {
       "IsSimpleConfiguration": true,
-      "DurationOfBreaking": 50,
+      "DurationOfBreaking": 30000,
       "ExceptionsAllowedBeforeBreaking": 2,
       "FailureThreshold": 0.5,
       "SamplingDuration": 5000,
